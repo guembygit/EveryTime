@@ -1,0 +1,91 @@
+﻿@model List<PlanningTime.Models.UserPlanning>
+
+<input type="hidden" id="hiddenMonthName" value="@ViewBag.MonthName" />
+
+<table class="table table-bordered text-center align-middle table-sm small-table">
+    <thead>
+        <tr>
+            <th>Utilisateur</th>
+            @for (int w = 0; w < Model.First().Weeks.Count; w++)
+            {
+                <th colspan="7">Semaine @(w + 1)</th>
+            }
+        </tr>
+        <!-- Ligne des jours (L, Ma, ...) -->
+        <tr>
+            <th></th>
+            @for (int w = 0; w < Model.First().Weeks.Count; w++)
+            {
+                foreach (var day in Model.First().Weeks[w].Days)
+                {
+                    <th>@day.Date.ToString("ddd")</th>
+                }
+            }
+        </tr>
+        <!-- Ligne des numéros de jour -->
+        <tr>
+            <th></th>
+            @for (int w = 0; w < Model.First().Weeks.Count; w++)
+            {
+                foreach (var day in Model.First().Weeks[w].Days)
+                {
+                    if (day.Date.Month == ViewBag.Month)
+                    {
+                        <th>@day.Date.Day</th>
+                    }
+                    else
+                    {
+                        <th class="text-muted">@day.Date.Day</th>
+                    }
+                }
+            }
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var user in Model)
+        {
+            <tr>
+                <td>@user.FullName</td>
+                @for (int w = 0; w < user.Weeks.Count; w++)
+                {
+                    foreach (var day in user.Weeks[w].Days)
+                    {
+                        var color = "#e0e0e0"; // par défaut
+                        if (day.Date.Month == ViewBag.Month)
+                        {
+                            color = day.Color;
+                        }
+
+                        <td>
+                            <span class="dayDot"
+                                  style="background-color:@color;"
+                                  title="@day.Type?.ToString()">
+                            </span>
+                        </td>
+                    }
+                }
+            </tr>
+        }
+    </tbody>
+</table>
+
+<style>
+    .small-table th,
+    .small-table td {
+        font-size: 1.1rem; /* réduit la taille du texte */
+        padding: 2px 4px; /* réduit l’espacement */
+    }
+
+    .dayDot {
+        display: inline-block;
+        width: 10px; /* plus petit cercle */
+        height: 10px;
+        border-radius: 50%;
+        margin: auto;
+    }
+
+        .dayDot:hover {
+            opacity: 0.8;
+            cursor: pointer;
+        }
+</style>

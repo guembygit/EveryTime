@@ -1,0 +1,19 @@
+﻿@model Event
+
+<form asp-action="Create" method="post">
+    <input type="hidden" name="StartDate" value="@Model?.StartDate.ToString("yyyy-MM-dd")" />
+    <input type="hidden" name="EndDate" value="@Model?.EndDate.ToString("yyyy-MM-dd")" />
+
+    <div class="mb-3">
+        <label>Type d'événement</label>
+        <select name="EventTypeId" class="form-select" required>
+            <option value="">Sélectionner</option>
+            @foreach (var type in ViewBag.EventTypes ?? new List<dynamic>())
+            {
+                <option value="@type.Id">@type.Name</option>
+            }
+        </select>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Créer</button>
+</form>

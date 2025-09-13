@@ -1,0 +1,40 @@
+﻿@model List<Event>
+
+<h2>Demandes en attente</h2>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Employé</th>
+            <th>Type</th>
+            <th>Période</th>
+            <th>Motif</th>
+            <th>Justificatif</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var e in Model)
+        {
+            <tr>
+                <td>@e.User.FirstName @e.User.LastName</td>
+                <td>@e.EventType.Name</td>
+                <td>@e.StartDate.ToShortDateString() - @e.EndDate.ToShortDateString()</td>
+                <td>@e.Motif</td>
+                <td>
+                    @if (!string.IsNullOrEmpty(e.Justificatif))
+                    {
+                        <a href="@e.Justificatif" target="_blank">Voir</a>
+                    }
+                </td>
+                <td>
+                    <form asp-action="Validate" method="post">
+                        <input type="hidden" name="id" value="@e.Id" />
+                        <button type="submit" name="approve" value="true" class="btn btn-success">Approuver</button>
+                        <button type="submit" name="approve" value="false" class="btn btn-danger">Rejeter</button>
+                    </form>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

@@ -1,0 +1,24 @@
+﻿@model Event
+
+<form asp-action="CancelOrDelete" method="post">
+    <input type="hidden" name="EventId" value="@Model?.Id" />
+
+    <div class="mb-3">
+        <label>Type d'événement</label>
+        <select name="EventTypeId" class="form-select" required>
+            @foreach (var type in ViewBag.EventTypes ?? new List<dynamic>())
+            {
+                <option value="@type.Id" selected="@(Model?.EventTypeId == type.Id ? "selected" : null)">
+                    @type.Name
+                </option>
+            }
+        </select>
+    </div>
+
+    <div class="mb-3">
+        <label>Actions</label><br />
+        <button type="submit" name="action" value="update" class="btn btn-success">Modifier</button>
+        <button type="submit" name="action" value="cancel" class="btn btn-warning">Annuler</button>
+        <button type="submit" name="action" value="delete" class="btn btn-danger">Supprimer</button>
+    </div>
+</form>

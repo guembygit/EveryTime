@@ -1,0 +1,73 @@
+﻿@model List<PlanningTime.Models.UserPlanning>
+
+<div class="d-flex justify-content-between mb-3 align-items-center">
+    <div>
+        <label for="selectYear">Année :</label>
+        <select id="selectYear" class="form-select d-inline-block w-auto">
+            @for (int y = DateTime.Now.Year - 5; y <= DateTime.Now.Year + 5; y++)
+            {
+                if (y == ViewBag.Year)
+                {
+                    <option value="@y" selected>@y</option>
+                }
+                else
+                {
+                    <option value="@y">@y</option>
+                }
+            }
+        </select>
+    </div>
+
+    <div>
+        <button id="prevMonth" class="btn btn-secondary">« Mois précédent</button>
+        <span id="currentMonth">@ViewBag.MonthName @ViewBag.Year</span>
+        <button id="nextMonth" class="btn btn-secondary">Mois suivant »</button>
+    </div>
+</div>
+
+<div id="usersPlanningContainer">
+    @await Html.PartialAsync("_UsersPlanningGrid", Model)
+</div>
+
+@section Scripts {
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script>
+        $(function () {
+            var currentMonth = parseInt("@ViewBag.Month");
+            var currentYear = parseInt("@ViewBag.Year");
+
+            function loadMonth(year, month) {
+                $.get("/Planning/GetUsersMonth", { year: year, month: month }, function (data) {
+                    $("#usersPlanningContainer").html(data);
+                    currentMonth = month;
+                    currentYear = year;
+                    var monthName = $("#hiddenMonthName").val();
+                    $("#currentMonth").text(monthName + " " + year);
+                    // Mettre à jour le select année
+                    $("#selectYear").val(year);
+                });
+            }
+
+            $("#prevMonth").click(function () {
+                var newMonth = currentMonth - 1;
+                var newYear = currentYear;
+                if (newMonth < 1) { newMonth = 12; newYear--; }
+                loadMonth(newYear, newMonth);
+            });
+
+            $("#nextMonth").click(function () {
+                var newMonth = currentMonth + 1;
+                var newYear = currentYear;
+                if (newMonth > 12) { newMonth = 1; newYear++; }
+                loadMonth(newYear, newMonth);
+            });
+
+            // Changement de l'année
+            $("#selectYear").change(function () {
+                var selectedYear = parseInt($(this).val());
+                currentYear = selectedYear;
+                loadMonth(currentYear, currentMonth);
+            });
+        });
+    </script>
+}

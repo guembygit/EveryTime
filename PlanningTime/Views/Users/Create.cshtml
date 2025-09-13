@@ -1,0 +1,43 @@
+﻿@model User
+@{
+    var profiles = ViewBag.Profiles as List<Profile>;
+}
+
+<h2>Créer un utilisateur</h2>
+
+<form asp-action="Create" method="post">
+    <div class="form-group">
+        <label>Prénom</label>
+        <input asp-for="FirstName" class="form-control" required />
+    </div>
+    <div class="form-group">
+        <label>Nom</label>
+        <input asp-for="LastName" class="form-control" required />
+    </div>
+    <div class="form-group">
+        <label>Email</label>
+        <input asp-for="Email" type="email" class="form-control" required />
+    </div>
+    <div class="form-group">
+        <label>Mot de passe</label>
+        <input name="password" type="password" class="form-control" required />
+    </div>
+    <div class="form-group">
+        <label>Profil</label>
+        <select asp-for="ProfileId" class="form-control">
+            @foreach (var p in profiles)
+            {
+                <option value="@p.Id">@p.Name</option>
+            }
+        </select>
+    </div>
+    <div class="form-group">
+        <label>Date d'embauche</label>
+        <input asp-for="HireDate" type="date" class="form-control" />
+    </div>
+    <div class="form-group">
+        <label>Actif</label>
+        <input asp-for="IsActive" type="checkbox" />
+    </div>
+    <button type="submit" class="btn btn-success mt-3">Créer</button>
+</form>

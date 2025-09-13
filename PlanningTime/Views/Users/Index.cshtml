@@ -1,0 +1,27 @@
+﻿@model List<User>
+
+<h2>Gestion des utilisateurs</h2>
+
+<a href="/Users/Create" class="btn btn-primary">Créer un utilisateur</a>
+
+<table class="table mt-3">
+    <thead>
+        <tr>
+            <th>Nom</th>
+            <th>Email</th>
+            <th>Profil</th>
+            <th>Actif</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var u in Model)
+        {
+            <tr>
+                <td>@u.FirstName @u.LastName</td>
+                <td>@u.Email</td>
+                <td>@u.Profile.Name</td>
+                <td>@(u.IsActive ? "Oui" : "Non")</td>
+            </tr>
+        }
+    </tbody>
+</table>

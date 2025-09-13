@@ -1,0 +1,25 @@
+﻿@model CreateEventViewModel
+
+<form asp-action="Create" enctype="multipart/form-data" method="post">
+    <div>
+        <label>Type d'événement</label>
+        <select asp-for="EventTypeId" asp-items="@(new SelectList(ViewBag.EventTypes, "Id", "Name"))"></select>
+    </div>
+    <div>
+        <label>Date début</label>
+        <input asp-for="StartDate" type="date" />
+    </div>
+    <div>
+        <label>Date fin</label>
+        <input asp-for="EndDate" type="date" />
+    </div>
+    <div>
+        <label>Motif</label>
+        <textarea asp-for="Motif"></textarea>
+    </div>
+    <div>
+        <label>Justificatif (optionnel)</label>
+        <input asp-for="Justificatif" type="file" />
+    </div>
+    <button type="submit">Soumettre</button>
+</form>

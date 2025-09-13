@@ -1,0 +1,45 @@
+﻿@model List<PlanningTime.Models.Event>
+
+<h2>Mes événements</h2>
+
+@if (!Model.Any())
+{
+    <p>Vous n'avez encore créé aucun événement.</p>
+}
+else
+{
+    <table>
+        <thead>
+            <tr>
+                <th>Type</th>
+                <th>Motif</th>
+                <th>Début</th>
+                <th>Fin</th>
+                <th>Status</th>
+                <th>Justificatif</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var e in Model)
+            {
+                <tr>
+                    <td>@e.EventType.Name</td>
+                    <td>@e.Motif</td>
+                    <td>@e.StartDate.ToShortDateString()</td>
+                    <td>@e.EndDate.ToShortDateString()</td>
+                    <td>@e.Status</td>
+                    <td>
+                        @if (!string.IsNullOrEmpty(e.Justificatif))
+                        {
+                            <a href="@e.Justificatif" target="_blank">Voir</a>
+                        }
+                        else
+                        {
+                            <span>—</span>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}

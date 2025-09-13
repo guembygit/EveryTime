@@ -1,0 +1,164 @@
+﻿@model List<PlanningDay>
+
+<input type="hidden" id="hiddenMonth" value="@ViewBag.Month" />
+<input type="hidden" id="hiddenYear" value="@ViewBag.Year" />
+<input type="hidden" id="hiddenMonthName" value="@ViewBag.MonthName" />
+
+<div class="d-flex justify-content-between mb-3 align-items-center">
+    <div>
+        <label for="selectYear">Année :</label>
+        <select id="selectYear" class="form-select d-inline-block w-auto">
+            @for (int y = DateTime.Now.Year - 5; y <= DateTime.Now.Year + 5; y++)
+            {
+                if (y == ViewBag.Year)
+                {
+                    <option value="@y" selected>@y</option>
+                }
+                else
+                {
+                    <option value="@y">@y</option>
+                }
+            }
+        </select>
+    </div>
+
+    <div>
+        <button id="prevMonth" class="btn btn-secondary">« Mois précédent</button>
+        <span id="currentMonth">@ViewBag.MonthName @ViewBag.Year</span>
+        <button id="nextMonth" class="btn btn-secondary">Mois suivant »</button>
+    </div>
+</div>
+
+<div id="planningContainer">
+    @if (Model != null)
+    {
+        @Html.Partial("_PlanningGrid", Model)
+    }
+</div>
+
+<hr />
+
+<h5>Liste des utilisateurs</h5>
+
+
+<!-- Modal -->
+<div class="modal fade" id="eventModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Événement</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="eventModalBody"></div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        $(document).ready(function () {
+            var currentMonth = parseInt($("#hiddenMonth").val());
+            var currentYear = parseInt($("#hiddenYear").val());
+            var selectedUserId = $(".userItem.active").length ? $(".userItem.active").data("userid") : 0;
+
+            function loadMonth(year, month, userId) {
+                $.get("/Planning/GetMonth", { year: year, month: month, userId: userId }, function (data) {
+                    $("#planningContainer").html(data);
+                    currentMonth = month;
+                    currentYear = year;
+                    selectedUserId = userId;
+                    var monthNames = ["Janvier", "Février", "Mars", "Avril", "Mai", "Juin", "Juillet",
+                        "Août", "Septembre", "Octobre", "Novembre", "Décembre"];
+                    $("#hiddenMonthName").val(monthNames[month - 1]);
+                    $("#currentMonth").text(monthNames[month - 1] + " " + currentYear);
+                    $("#selectYear").val(currentYear);
+                });
+            }
+
+            $("#prevMonth").click(function () {
+                var newMonth = currentMonth - 1, newYear = currentYear;
+                if (newMonth < 1) { newMonth = 12; newYear--; }
+                loadMonth(newYear, newMonth, selectedUserId);
+            });
+
+            $("#nextMonth").click(function () {
+                var newMonth = currentMonth + 1, newYear = currentYear;
+                if (newMonth > 12) { newMonth = 1; newYear++; }
+                loadMonth(newYear, newMonth, selectedUserId);
+            });
+
+            $("#selectYear").change(function () {
+                loadMonth(parseInt($(this).val()), currentMonth, selectedUserId);
+            });
+
+            $(document).on("click", ".userItem", function () {
+                $(".userItem").removeClass("active");
+                $(this).addClass("active");
+                selectedUserId = $(this).data("userid");
+                loadMonth(currentYear, currentMonth, selectedUserId);
+            });
+
+            $(document).on("click", ".dayBtn:not([disabled])", function () {
+                var date = $(this).data("date");
+                var dayType = $(this).data("type");
+
+                if (dayType && dayType !== "") {
+                    $.get("/Events/CancelOrDelete", { date: date }, function (formHtml) {
+                        $("#eventModalBody").html(formHtml);
+                        var modal = new bootstrap.Modal(document.getElementById('eventModal'));
+                        modal.show();
+                        $("#eventModalBody form").submit(function (e) {
+                            e.preventDefault();
+                            var form = $(this);
+                            var formData = new FormData(this);
+                            $.ajax({
+                                url: form.attr("action"),
+                                type: form.attr("method"),
+                                data: formData,
+                                contentType: false,
+                                processData: false,
+                                success: function () {
+                                    modal.hide();
+                                    loadMonth(currentYear, currentMonth, selectedUserId);
+                                },
+                                error: function (xhr) {
+                                    $("#eventModalBody").html(xhr.responseText);
+                                }
+                            });
+                        });
+                    });
+                } else {
+                    $.get("/Events/Create", function (formHtml) {
+                        $("#eventModalBody").html(formHtml);
+                        $("#eventModalBody form input[name='StartDate']").attr("type", "hidden").val(date);
+                        $("#eventModalBody form input[name='EndDate']").attr("type", "hidden").val(date);
+                        var modal = new bootstrap.Modal(document.getElementById('eventModal'));
+                        modal.show();
+                        $("#eventModalBody form").submit(function (e) {
+                            e.preventDefault();
+                            var form = $(this);
+                            var formData = new FormData(this);
+                            $.ajax({
+                                url: form.attr("action"),
+                                type: form.attr("method"),
+                                data: formData,
+                                contentType: false,
+                                processData: false,
+                                success: function () {
+                                    modal.hide();
+                                    loadMonth(currentYear, currentMonth, selectedUserId);
+                                },
+                                error: function (xhr) {
+                                    $("#eventModalBody").html(xhr.responseText);
+                                }
+                            });
+                        });
+                    });
+                }
+            });
+        });
+    </script>
+}

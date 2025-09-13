@@ -1,0 +1,112 @@
+﻿@model List<PlanningDay>
+
+@functions {
+    private string GetColor(PlanningTime.Models.DayType? type, bool isWeekend, bool isHoliday, bool isPast)
+    {
+        if (isHoliday) return "#555555";
+        if (isWeekend) return "#555555";
+        if (isPast && type == null) return "#e0e0e0";
+
+        return type switch
+        {
+            PlanningTime.Models.DayType.Presentiel => "#4CAF50",
+            PlanningTime.Models.DayType.Teletravail => "#2196F3",
+            PlanningTime.Models.DayType.Conge => "#FF9800",
+            PlanningTime.Models.DayType.Absence => "#9C27B0",
+            PlanningTime.Models.DayType.Formation => "#00BCD4",
+            PlanningTime.Models.DayType.Ferie => "#555555",
+            _ => "#ffffff"
+        };
+    }
+}
+
+<table class="table table-bordered text-center">
+    <thead>
+        <tr>
+            <th>Lundi</th>
+            <th>Mardi</th>
+            <th>Mercredi</th>
+            <th>Jeudi</th>
+            <th>Vendredi</th>
+            <th>Samedi</th>
+            <th>Dimanche</th>
+        </tr>
+    </thead>
+    <tbody>
+        @{
+            int year = (int)ViewBag.Year;
+            int month = (int)ViewBag.Month;
+            int daysInMonth = DateTime.DaysInMonth(year, month);
+            var firstDayOfMonth = new DateTime(year, month, 1);
+            int startOffset = ((int)firstDayOfMonth.DayOfWeek + 6) % 7;
+            int totalCells = daysInMonth + startOffset;
+            int totalWeeks = (int)Math.Ceiling(totalCells / 7.0);
+            DateTime today = DateTime.Now.Date;
+
+            for (int week = 0; week < totalWeeks; week++)
+            {
+                <tr>
+                    @for (int dayOfWeek = 0; dayOfWeek < 7; dayOfWeek++)
+                    {
+                        int cellIndex = week * 7 + dayOfWeek;
+                        int dayNumber = cellIndex - startOffset + 1;
+                        DateTime date;
+
+                        if (dayNumber < 1)
+                        {
+                            var prevMonth = firstDayOfMonth.AddMonths(-1);
+                            int daysInPrevMonth = DateTime.DaysInMonth(prevMonth.Year, prevMonth.Month);
+                            date = new DateTime(prevMonth.Year, prevMonth.Month, daysInPrevMonth + dayNumber);
+                        }
+                        else if (dayNumber > daysInMonth)
+                        {
+                            var nextMonth = firstDayOfMonth.AddMonths(1);
+                            date = new DateTime(nextMonth.Year, nextMonth.Month, dayNumber - daysInMonth);
+                        }
+                        else
+                        {
+                            date = new DateTime(year, month, dayNumber);
+                        }
+
+                        var day = Model?.FirstOrDefault(d => d.Date.Date == date.Date);
+                        bool isWeekend = date.DayOfWeek == DayOfWeek.Saturday || date.DayOfWeek == DayOfWeek.Sunday;
+                        bool isHoliday = day?.IsDisabled ?? false;
+                        bool isPast = date < today;
+                        bool isDisabled = isPast || isWeekend || isHoliday;
+
+                        var bgColor = GetColor(day?.Type, isWeekend, isHoliday, isPast);
+                        <td style="background-color:@bgColor; vertical-align:top; height:100px;">
+                            <button class="dayBtn btn btn-sm w-100 h-100"
+                                    style="background-color:transparent; border:none;"
+                                    data-date="@date.ToString("yyyy-MM-dd")"
+                                    data-type="@day?.Type"
+                            @(isDisabled ? "disabled" : "")>
+                                <div><strong>@date.Day</strong></div>
+
+                                @if (day?.UserEvents != null && day.UserEvents.Any())
+                                {
+                                    <div style="margin-top:3px;">
+                                        @foreach (var ue in day.UserEvents)
+                                        {
+                                            <div style="background-color:@GetColor(ue.Type, false, false, false);
+                                                            color:white;
+                                                            font-size:0.7em;
+                                                            padding:2px;
+                                                            margin-bottom:1px;
+                                                            border-radius:3px;
+                                                            overflow:hidden;
+                                                            white-space:nowrap;
+                                                            text-overflow:ellipsis;">
+                                                @ue.UserName
+                                            </div>
+                                        }
+                                    </div>
+                                }
+                            </button>
+                        </td>
+                    }
+                </tr>
+            }
+        }
+    </tbody>
+</table>
