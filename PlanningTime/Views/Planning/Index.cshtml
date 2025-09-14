@@ -38,21 +38,85 @@
 
 <hr />
 
-<h5>Liste des utilisateurs</h5>
+@{
+    var currentUserId = Context.Session.GetInt32("UserId");
+    var users = ViewBag.Users as List<User>; // ⚡ Assure-toi que tu passes bien la liste des users
+}
 
+<h5>Liste des utilisateurs</h5>
+<div class="list-group">
+    @foreach (var user in users)
+    {
+        <a 
+           class="list-group-item list-group-item-action d-flex align-items-center userItem @(user.Id == currentUserId ? "active" : "")"
+           data-userid="@user.Id">
+            <img src="https://i.pravatar.cc/40?u=@user.Id"
+                 alt="@user.LastName"
+                 class="rounded-circle me-3"
+                 style="width:40px; height:40px; object-fit:cover;" />
+            <div>
+                <div class="fw-bold">@user.LastName</div>
+                <small>@user.LastName</small>
+            </div>
+        </a>
+    }
+</div>
 
 <!-- Modal -->
-<div class="modal fade" id="eventModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Événement</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+<!-- Modal pour créer ou supprimer un événement -->
+<!-- Modal Création -->
+<div id="createEventModal" class="modal" style="display:none;">
+    <div class="modal-content" style="max-width:400px;margin:100px auto;padding:20px;border:1px solid #ccc;background:#fff;position:relative;">
+        <span class="btn-close" style="position:absolute;top:10px;right:10px;cursor:pointer;">&times;</span>
+        <h5>Créer un événement</h5>
+        <form id="createEventForm" method="post" action="/Events/Create">
+            <input type="hidden" name="StartDate" id="createStartDate">
+            <input type="hidden" name="EndDate" id="createEndDate">
+
+            <div class="mb-3">
+                <label>Type d'événement</label>
+                <select name="EventTypeId" class="form-select" required>
+                    <option value="1">Présentiel</option>
+                    <option value="2">Télétravail</option>
+                </select>
             </div>
-            <div class="modal-body" id="eventModalBody"></div>
-        </div>
+
+            <button type="submit" class="btn btn-primary">Créer</button>
+        </form>
     </div>
 </div>
+
+<!-- Modal Modification -->
+<div id="editEventModal" class="modal" style="display:none;">
+    <div class="modal-content" style="max-width:400px;margin:100px auto;padding:20px;border:1px solid #ccc;background:#fff;position:relative;">
+        <span class="btn-close" style="position:absolute;top:10px;right:10px;cursor:pointer;">&times;</span>
+        <h5>Modifier l’événement</h5>
+        <form id="editEventForm" method="post" action="/Events/Manage">
+            <input type="text" name="Id" id="editEventId">
+            <input type="hidden" name="StartDate" id="editStartDate">
+            <input type="hidden" name="EndDate" id="editEndDate">
+
+            <div class="mb-3">
+                <label>Type d'événement</label>
+                <select name="EventTypeId" id="editType" class="form-select" required>
+                    <option value="1">Présentiel</option>
+                    <option value="2">Télétravail</option>
+                </select>
+            </div>
+
+            <div class="mb-3 form-check">
+                <input type="checkbox" class="form-check-input" id="cancelEvent" name="actionType" value="delete">
+                <label class="form-check-label" for="cancelEvent">Annuler cet événement</label>
+            </div>
+
+            <button type="submit" class="btn btn-success">Enregistrer</button>
+        </form>
+    </div>
+</div>
+
+
+
+
 
 @section Scripts {
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
@@ -94,71 +158,80 @@
                 loadMonth(parseInt($(this).val()), currentMonth, selectedUserId);
             });
 
-            $(document).on("click", ".userItem", function () {
-                $(".userItem").removeClass("active");
-                $(this).addClass("active");
-                selectedUserId = $(this).data("userid");
-                loadMonth(currentYear, currentMonth, selectedUserId);
-            });
+            /*$(document).on("click", ".userItem", function (e) {
+                e.preventDefault();
+                var userId = $(this).data("userid");
+                var year = "@ViewBag.Year";
+                var month = "@ViewBag.Month";
+                window.location.href = "/Planning/Index?userId=" + userId + "&year=" + year + "&month=" + month;
+            });*/
 
             $(document).on("click", ".dayBtn:not([disabled])", function () {
-                var date = $(this).data("date");
-                var dayType = $(this).data("type");
+                var $btn = $(this);
+                var date = $btn.data("date");
+                var dayType = $btn.data("type");
+                var eventId = $btn.data("id");
 
-                if (dayType && dayType !== "") {
-                    $.get("/Events/CancelOrDelete", { date: date }, function (formHtml) {
-                        $("#eventModalBody").html(formHtml);
-                        var modal = new bootstrap.Modal(document.getElementById('eventModal'));
-                        modal.show();
-                        $("#eventModalBody form").submit(function (e) {
-                            e.preventDefault();
-                            var form = $(this);
-                            var formData = new FormData(this);
-                            $.ajax({
-                                url: form.attr("action"),
-                                type: form.attr("method"),
-                                data: formData,
-                                contentType: false,
-                                processData: false,
-                                success: function () {
-                                    modal.hide();
-                                    loadMonth(currentYear, currentMonth, selectedUserId);
-                                },
-                                error: function (xhr) {
-                                    $("#eventModalBody").html(xhr.responseText);
-                                }
+                if (!dayType) {
+                    // --- Aucune donnée → modal création ---
+                    $("#createStartDate").val(date);
+                    $("#createEndDate").val(date);
+                    $("#createEventModal").fadeIn();
+
+                    $("#createEventForm").off("submit").on("submit", function (e) {
+                        e.preventDefault();
+                        $.post($(this).attr("action"), $(this).serialize())
+                            .done(function () {
+                                $("#createEventModal").fadeOut();
+                                loadMonth(currentYear, currentMonth, selectedUserId);
                             });
-                        });
                     });
                 } else {
-                    $.get("/Events/Create", function (formHtml) {
-                        $("#eventModalBody").html(formHtml);
-                        $("#eventModalBody form input[name='StartDate']").attr("type", "hidden").val(date);
-                        $("#eventModalBody form input[name='EndDate']").attr("type", "hidden").val(date);
-                        var modal = new bootstrap.Modal(document.getElementById('eventModal'));
-                        modal.show();
-                        $("#eventModalBody form").submit(function (e) {
-                            e.preventDefault();
-                            var form = $(this);
-                            var formData = new FormData(this);
-                            $.ajax({
-                                url: form.attr("action"),
-                                type: form.attr("method"),
-                                data: formData,
-                                contentType: false,
-                                processData: false,
-                                success: function () {
-                                    modal.hide();
-                                    loadMonth(currentYear, currentMonth, selectedUserId);
-                                },
-                                error: function (xhr) {
-                                    $("#eventModalBody").html(xhr.responseText);
-                                }
+                    // --- Déjà un événement → modal édition ---
+                    $("#editEventId").val(eventId);
+                    $("#editStartDate").val(date);
+                    $("#editEndDate").val(date);
+                    $("#editType").val(eventId);
+                    $("#cancelEvent").prop("checked", false);
+                    $("#editEventModal").fadeIn();
+
+                    $("#editEventForm").off("submit").on("submit", function (e) {
+                        e.preventDefault();
+                        let formData = $(this).serialize();
+                        $.post($(this).attr("action"), formData)
+                            .done(function () {
+                                $("#editEventModal").fadeOut();
+                                loadMonth(currentYear, currentMonth, selectedUserId);
                             });
-                        });
                     });
                 }
             });
+
+            // Fermer les modals
+            $(document).on("click", ".modal .btn-close", function () {
+                $(this).closest(".modal").fadeOut();
+            });
+
+
+            // Fermer la modal
+            $(document).on("click", "#createEventModal .btn-close", function () {
+                $("#createEventModal").fadeOut();
+            });
+
+            $(document).on("click", ".userItem", function (e) {
+                e.preventDefault();
+
+                var userId = $(this).data("userid");
+                selectedUserId = userId; // 🔑 on change l’utilisateur cible
+
+                // recharge le planning du mois courant avec ce userId
+                loadMonth(currentYear, currentMonth, selectedUserId);
+
+                // style actif
+                $(".userItem").removeClass("active");
+                $(this).addClass("active");
+            });
+
         });
     </script>
 }

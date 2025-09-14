@@ -133,20 +133,24 @@ namespace PlanningTime.Controllers
             var evt = _context.Events.Find(model.Id);
             if (evt == null) return NotFound();
 
-            if (actionType == "update")
-            {
-                evt.EventType = model.EventType;
-                _context.SaveChanges();
-            }
-
-            else if (actionType == "delete")
+            if (actionType == "delete")
             {
                 _context.Events.Remove(evt);
-                _context.SaveChanges();
             }
-
+            else
+            {
+                evt.EventTypeId = model.EventTypeId;
+            }
+            _context.SaveChanges();
             return Ok();
         }
+
+        /*public IActionResult CancelOrDelete(DateTime date, int id)
+        {
+            var model = new EventViewModel { Id = id, StartDate = date };
+            return PartialView("_CancelOrDeleteForm", model);
+        }*/
+
 
     }
 
