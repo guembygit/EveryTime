@@ -17,6 +17,7 @@ else
                 <th>Fin</th>
                 <th>Status</th>
                 <th>Justificatif</th>
+                <th>Actions</th>
             </tr>
         </thead>
         <tbody>
@@ -38,8 +39,37 @@ else
                             <span>—</span>
                         }
                     </td>
+                    <td>
+                        <button class="btn btn-sm btn-danger deleteEvent" data-id="@e.Id">Supprimer</button>
+                    </td>
                 </tr>
             }
         </tbody>
     </table>
 }
+
+@section Scripts {
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script>
+
+        $(document).on("click", ".deleteEvent", function () {
+            if (!confirm("Voulez-vous vraiment supprimer cet événement ?")) return;
+
+            var btn = $(this);
+            var id = btn.data("id");
+
+            $.post("/Events/Delete", { id: id }, function (res) {
+                if (res.success) {
+                    // Supprime la ligne du tableau sans recharger la page
+                    btn.closest("tr").fadeOut(300, function () {
+                        $(this).remove();
+                    });
+                } else {
+                    alert("Erreur lors de la suppression !");
+                }
+            });
+        });
+       
+    </script>
+}
+

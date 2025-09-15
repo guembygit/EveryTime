@@ -30,6 +30,8 @@
         public int? ValidatedById { get; set; }
         public User? ValidatedBy { get; set; }
         public DateTime? ValidatedAt { get; set; }
+
+        public bool IsDeleted { get; set; } = false;
     }
 
 }

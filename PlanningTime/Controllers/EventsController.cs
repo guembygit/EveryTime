@@ -175,6 +175,22 @@ namespace PlanningTime.Controllers
             return Json(result);
         }
 
+        [HttpPost]
+        public IActionResult Delete(int id)
+        {
+            var ev = _context.Events.FirstOrDefault(e => e.Id == id);
+            if (ev == null) return NotFound();
+
+            // Vérifie que c’est bien l’utilisateur connecté
+            var sessionUserId = HttpContext.Session.GetInt32("UserId");
+            if (sessionUserId == null || ev.UserId != sessionUserId.Value)
+                return Unauthorized();
+
+            ev.IsDeleted = true;
+            _context.SaveChanges();
+
+            return Json(new { success = true });
+        }
 
     }
 
