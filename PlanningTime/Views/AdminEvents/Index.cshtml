@@ -1,6 +1,6 @@
 ﻿@model List<Event>
 
-<h2>Demandes en attente</h2>
+<h2>Demandes</h2>
 
 <table class="table">
     <thead>
@@ -16,7 +16,7 @@
     <tbody>
         @foreach (var e in Model)
         {
-            <tr>
+            <tr data-id="@e.Id">
                 <td>@e.User.FirstName @e.User.LastName</td>
                 <td>@e.EventType.Name</td>
                 <td>@e.StartDate.ToShortDateString() - @e.EndDate.ToShortDateString()</td>
@@ -27,14 +27,44 @@
                         <a href="@e.Justificatif" target="_blank">Voir</a>
                     }
                 </td>
-                <td>
-                    <form asp-action="Validate" method="post">
-                        <input type="hidden" name="id" value="@e.Id" />
-                        <button type="submit" name="approve" value="true" class="btn btn-success">Approuver</button>
-                        <button type="submit" name="approve" value="false" class="btn btn-danger">Rejeter</button>
-                    </form>
+                <td class="action-cell">
+                    @if (e.Status == EventStatus.Pending)
+                    {
+                        <button class="btn btn-success approve-btn" data-id="@e.Id">Approuver</button>
+                        <button class="btn btn-danger reject-btn" data-id="@e.Id">Rejeter</button>
+                    }
+                    else if (e.Status == EventStatus.Approved)
+                    {
+                        <span class="text-success">Approuvé</span>
+                    }
+                    else if (e.Status == EventStatus.Rejected)
+                    {
+                        <span class="text-danger">Rejeté</span>
+                    }
                 </td>
             </tr>
         }
     </tbody>
 </table>
+
+@section Scripts {
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script>
+        $(document).on("click", ".approve-btn, .reject-btn", function () {
+            var $btn = $(this);
+            var eventId = $btn.data("id");
+            var approve = $btn.hasClass("approve-btn");
+
+            $.post("/AdminEvents/Validate", { id: eventId, approve: approve }, function (res) {
+                if (res.success) {
+                    var $cell = $btn.closest("td.action-cell");
+                    $cell.html(approve
+                        ? "<span class='text-success'>Approuvé</span>"
+                        : "<span class='text-danger'>Rejeté</span>");
+                } else {
+                    alert("Erreur lors de la mise à jour du statut !");
+                }
+            });
+        });
+    </script>
+}

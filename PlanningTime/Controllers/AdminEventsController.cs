@@ -24,7 +24,7 @@ namespace PlanningTime.Controllers
             var pendingEvents = _context.Events
                 .Include(e => e.User)
                 .Include(e => e.EventType)
-                .Where(e => e.Status == EventStatus.Pending)
+                //.Where(e => e.Status == EventStatus.Pending)
                 .ToList();
 
             return View(pendingEvents);
@@ -34,16 +34,14 @@ namespace PlanningTime.Controllers
         public IActionResult Validate(int id, bool approve)
         {
             var ev = _context.Events.Include(e => e.User).FirstOrDefault(e => e.Id == id);
-            if (ev == null) return NotFound();
+            if (ev == null) return Json(new { success = false });
 
             ev.Status = approve ? EventStatus.Approved : EventStatus.Rejected;
-            ev.ValidatedById = _context.Users.First(u => u.Email == User.Identity.Name).Id;
-            ev.ValidatedAt = DateTime.Now;
-
             _context.SaveChanges();
 
-            return RedirectToAction("Index");
+            return Json(new { success = true });
         }
+
     }
 
 }
