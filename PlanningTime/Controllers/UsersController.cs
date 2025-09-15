@@ -67,4 +67,49 @@ public class UsersController : Controller
         var bytes = sha.ComputeHash(Encoding.UTF8.GetBytes(password));
         return Convert.ToBase64String(bytes);
     }
+
+    // Edition GET
+    [HttpGet]
+    public IActionResult Edit(int id)
+    {
+        var user = _context.Users.Find(id);
+        if (user == null) return NotFound();
+
+        ViewBag.Profiles = _context.Profiles.ToList();
+        return PartialView("_EditUserModal", user); // Vue partielle modal
+    }
+
+    // Edition POST
+    [HttpPost]
+    public IActionResult Edit(User model)
+    {
+        if (!ModelState.IsValid) return BadRequest(ModelState);
+
+        var user = _context.Users.Find(model.Id);
+        if (user == null) return NotFound();
+
+        user.FirstName = model.FirstName;
+        user.LastName = model.LastName;
+        user.Email = model.Email;
+        user.ProfileId = model.ProfileId;
+        user.HireDate = model.HireDate;
+        user.IsActive = model.IsActive;
+
+        _context.SaveChanges();
+        return Json(new { success = true });
+    }
+
+    // Activer/Désactiver via Ajax
+    [HttpPost]
+    public IActionResult ToggleStatus(int id)
+    {
+        var user = _context.Users.Find(id);
+        if (user == null) return NotFound();
+
+        user.IsActive = !user.IsActive;
+        _context.SaveChanges();
+
+        return Json(new { success = true, isActive = user.IsActive });
+    }
+
 }
