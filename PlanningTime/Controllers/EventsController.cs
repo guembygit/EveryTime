@@ -151,6 +151,30 @@ namespace PlanningTime.Controllers
             return PartialView("_CancelOrDeleteForm", model);
         }*/
 
+        [HttpGet]
+        public IActionResult GetEventDetails(int id)
+        {
+            var ev = _context.Events
+                .Include(e => e.EventType)
+                .FirstOrDefault(e => e.Id == id);
+
+            if (ev == null)
+                return NotFound();
+
+            var result = new
+            {
+                Id = ev.Id,
+                EventTypeId = ev.EventTypeId,
+                EventTypeName = ev.EventType.Name,
+                StartDate = ev.StartDate.ToString("yyyy-MM-dd"),
+                EndDate = ev.EndDate.ToString("yyyy-MM-dd"),
+                Motif = ev.Motif,
+                Status = ev.Status.ToString()
+            };
+
+            return Json(result);
+        }
+
 
     }
 

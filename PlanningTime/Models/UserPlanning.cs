@@ -11,6 +11,8 @@
         // Liste des semaines du mois
         public List<WeekPlanning> Weeks { get; set; } = new List<WeekPlanning>();
         //public List<PlanningWeek> Weeks { get; set; } = new();
+        public int EventId { get; set; }
+        public int EventTypeId { get; set; }
     }
 
 }

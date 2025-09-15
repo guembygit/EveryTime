@@ -121,11 +121,15 @@ namespace PlanningTime.Services
                         if (evt != null)
                         {
                             day.Type = MapEventTypeToDayType(evt.EventType.Name);
+                            day.EventId = evt.Id;
+                            day.EventTypeId = evt.EventTypeId;
                             day.UserEvents.Add(new UserEvent
                             {
                                 UserId = evt.UserId,
                                 UserName = $"{evt.User.FirstName} {evt.User.LastName}",
-                                Type = day.Type.Value
+                                Type = day.Type.Value,
+                                EventId = day.EventId,          // 👈 ici on met l’ID de l’événement
+                                EventTypeId = evt.EventTypeId,
                             });
                         }
 

@@ -59,7 +59,10 @@
                         <td>
                             <span class="dayDot"
                                   style="background-color:@color;"
-                                  title="@day.Type?.ToString()">
+                                  title="@day.Type?.ToString()"
+                                  data-type="@day.Type"
+                                  data-id="@day?.EventId"
+                                  data-typeid="@day?.EventTypeId">
                             </span>
                         </td>
                     }

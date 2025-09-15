@@ -29,6 +29,19 @@
     @await Html.PartialAsync("_UsersPlanningGrid", Model)
 </div>
 
+<div id="eventDetailsModal" class="modal" style="display:none;">
+    <div class="modal-content eventDetails" style="max-width:500px;margin:100px auto;padding:20px;border:1px solid #ccc;background:#fff;position:relative;">
+        <span class="btn-close" style="position:absolute;top:10px;right:10px;cursor:pointer;">&times;</span>
+        <h5>Détails de l’événement</h5>
+        <p><strong>Type :</strong> <span id="detailType"></span></p>
+        <p><strong>Date début :</strong> <span id="detailStart"></span></p>
+        <p><strong>Date fin :</strong> <span id="detailEnd"></span></p>
+        <p><strong>Motif :</strong> <span id="detailMotif"></span></p>
+        <p><strong>Status :</strong> <span id="detailStatus"></span></p>
+    </div>
+</div>
+
+
 @section Scripts {
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script>
@@ -68,6 +81,35 @@
                 currentYear = selectedYear;
                 loadMonth(currentYear, currentMonth);
             });
+
+            // Gestion du clic sur un point de jour
+            $(document).on("click", ".dayDot", function () {
+                var $btn = $(this);
+                var dayType = $(this).data("type");
+                var eventId = $btn.data("id");
+                var eventTypeId = $btn.data("typeid");
+
+                if (dayType) {
+                    $.get("/Events/GetEventDetails", { id: eventId }, function (data) {
+                        $("#detailType").text(data.eventTypeName);
+                        $("#detailStart").text(data.startDate);
+                        $("#detailEnd").text(data.endDate);
+                        $("#detailMotif").text(data.motif ?? "—");
+                        $("#detailStatus").text(data.status);
+
+                        $("#eventDetailsModal").fadeIn();
+                    });
+                } else {
+                    //$("#eventDetailsModal").fadeIn();
+                    //$('.eventDetails').html("Aucun type défini pour ce jour.")
+                }
+            });
+        
+            // Fermer le modal
+            $(document).on("click", "#eventDetailsModal .btn-close", function () {
+                $("#eventDetailsModal").fadeOut();
+            });
+
         });
     </script>
 }
