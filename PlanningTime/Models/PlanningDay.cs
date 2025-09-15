@@ -14,6 +14,7 @@
     public class PlanningDay
     {
         public int EventId { get; set; }
+        public int EventTypeId { get; set; }
         public DateTime Date { get; set; }
         public DayType? Type { get; set; } // null si non renseigné
         public bool IsDisabled { get; set; } // Weekends ou fériés

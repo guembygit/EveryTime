@@ -6,6 +6,7 @@ namespace PlanningTime
     {
         public int UserId { get; set; }
         public int EventId { get; set; }
+        public int EventTypeId { get; set; }
         public string UserName { get; set; } = "";
         public DayType Type { get; set; }
     }

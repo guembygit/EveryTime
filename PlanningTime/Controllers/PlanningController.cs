@@ -35,17 +35,24 @@ namespace PlanningTime.Controllers
 
             var model = _planningService.GetMonthPlanning(year, month, displayUserId);
 
-            // ⚡ Charger la liste des utilisateurs
-            var users = _context.Users
-        .Select(u => new User
-        {
-            Id = u.Id,
-            LastName = u.LastName,
-            FirstName = u.FirstName
-        })
-        .ToList();
-            ViewBag.Users = users;
+            // ⚡ Récupérer l'utilisateur connecté avec son profil
+            var currentUser = _context.Users
+                .Include(u => u.Profile)
+                .FirstOrDefault(u => u.Id == sessionUserId.Value);
 
+            // Liste des utilisateurs avec le même profil que l'utilisateur connecté
+            var users = _context.Users
+                .Where(u => u.ProfileId == currentUser.ProfileId)
+                .Select(u => new User
+                {
+                    Id = u.Id,
+                    LastName = u.LastName,
+                    FirstName = u.FirstName,
+                    ProfileId = u.ProfileId
+                })
+                .ToList();
+            ViewBag.Users = users;
+            ViewBag.ProfileName = currentUser.Profile?.Name; // 🔑 nom du profil
             ViewBag.Year = year;
             ViewBag.Month = month;
             ViewBag.MonthName = GetMonthName(month);
