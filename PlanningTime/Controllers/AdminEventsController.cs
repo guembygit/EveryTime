@@ -3,6 +3,10 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using PlanningTime.Models;
 
+using System.Net.Mail;
+using System.Net;
+using PlanningTime.Services;
+
 // USING A AJOUTER
 using Microsoft.EntityFrameworkCore;
 
@@ -38,6 +42,10 @@ namespace PlanningTime.Controllers
 
             ev.Status = approve ? EventStatus.Approved : EventStatus.Rejected;
             _context.SaveChanges();
+
+            // Envoi de mail à l’admin
+            var mailService = new MailService();
+            mailService.SendLeaveRequestMail2("Olivier Junior", approve ? "Approuvée" : "Rejetée", ev.StartDate, ev.EndDate);
 
             return Json(new { success = true });
         }

@@ -4,6 +4,9 @@ using PlanningTime.Models;
 
 // USING A AJOUTER
 using Microsoft.EntityFrameworkCore;
+using System.Net.Mail;
+using System.Net;
+using PlanningTime.Services;
 
 namespace PlanningTime.Controllers
 {
@@ -36,8 +39,8 @@ namespace PlanningTime.Controllers
         [HttpPost]
         public async Task<IActionResult> Create(CreateEventViewModel model)
         {
-            if (ModelState.IsValid)
-            {
+            //if (ModelState.IsValid)
+            //{
                 // Upload justificatif
                 string? justificatifPath = null;
                 if (model.Justificatif != null)
@@ -70,15 +73,21 @@ namespace PlanningTime.Controllers
                 _context.Events.Add(newEvent);
                 await _context.SaveChangesAsync();
 
-                return RedirectToAction("MyEvents");
-            }
-            return View(model);
+            // Looking to send emails in production? Check out our Email API/SMTP product!
+
+
+            // Envoi de mail à l’admin
+            var mailService = new MailService();
+            mailService.SendLeaveRequestMail("Olivier Junior", "Congés", model.StartDate, model.EndDate);
+            return Json(new { success = true });                //return RedirectToAction("MyEvents");
+            //}
         }
 
         public IActionResult MyEvents()
         {
             // Récupération du login de l'utilisateur connecté
             var userEmail = User.Identity?.Name;
+            ViewBag.EventTypes = _context.EventTypes.ToList();
 
             if (string.IsNullOrEmpty(userEmail))
             {

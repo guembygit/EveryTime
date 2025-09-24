@@ -48,7 +48,8 @@ namespace PlanningTime.Controllers
                     Id = u.Id,
                     LastName = u.LastName,
                     FirstName = u.FirstName,
-                    ProfileId = u.ProfileId
+                    ProfileId = u.ProfileId,
+                    ImageUser = u.ImageUser
                 })
                 .ToList();
             ViewBag.Users = users;

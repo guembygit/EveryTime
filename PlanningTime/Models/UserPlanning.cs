@@ -5,6 +5,7 @@
         public int UserId { get; set; }
         public string UserName { get; set; }
         public string FullName { get; set; }  // Nom + prénom
+        public string ImageUser { get; set; }  // Nom + prénom
 
         public List<PlanningDay> Days { get; set; } = new List<PlanningDay>();
 

@@ -54,6 +54,10 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcSG9tZVxQcml2YWN5LmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
+[C:/Users/guemb/source/repos/PlanningTime/PlanningTime/Views/Home/_DashboardContent.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcSG9tZVxfRGFzaGJvYXJkQ29udGVudC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
 [C:/Users/guemb/source/repos/PlanningTime/PlanningTime/Views/Planning/Index.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUGxhbm5pbmdcSW5kZXguY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
@@ -92,6 +96,10 @@ build_metadata.AdditionalFiles.CssScope =
 
 [C:/Users/guemb/source/repos/PlanningTime/PlanningTime/Views/Users/_EditUserModal.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcVXNlcnNcX0VkaXRVc2VyTW9kYWwuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/guemb/source/repos/PlanningTime/PlanningTime/Views/Users/_UsersTablePartial.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcVXNlcnNcX1VzZXJzVGFibGVQYXJ0aWFsLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
 [C:/Users/guemb/source/repos/PlanningTime/PlanningTime/Views/_ViewImports.cshtml]

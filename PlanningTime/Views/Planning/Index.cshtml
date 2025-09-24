@@ -4,9 +4,9 @@
 <input type="hidden" id="hiddenYear" value="@ViewBag.Year" />
 <input type="hidden" id="hiddenMonthName" value="@ViewBag.MonthName" />
 
-<div class="d-flex justify-content-between mb-3 align-items-center">
-    <div>
-        <label for="selectYear">Année :</label>
+<div class="d-flex justify-content-between mb-3 align-items-center flex-wrap">
+    <div class="mb-2">
+        <label for="selectYear" class="me-2">Année :</label>
         <select id="selectYear" class="form-select d-inline-block w-auto">
             @for (int y = DateTime.Now.Year - 5; y <= DateTime.Now.Year + 5; y++)
             {
@@ -22,10 +22,10 @@
         </select>
     </div>
 
-    <div>
-        <button id="prevMonth" class="btn btn-secondary">« Mois précédent</button>
-        <span id="currentMonth">@ViewBag.MonthName @ViewBag.Year</span>
-        <button id="nextMonth" class="btn btn-secondary">Mois suivant »</button>
+    <div class="mb-2 d-flex align-items-center">
+        <button id="prevMonth" class="btn btn-secondary me-2">« Mois précédent</button>
+        <span id="currentMonth" class="fw-bold fs-5">@ViewBag.MonthName @ViewBag.Year</span>
+        <button id="nextMonth" class="btn btn-secondary ms-2">Mois suivant »</button>
     </div>
 </div>
 
@@ -40,33 +40,34 @@
 
 @{
     var currentUserId = Context.Session.GetInt32("UserId");
-    var users = ViewBag.Users as List<User>; // ⚡ Assure-toi que tu passes bien la liste des users
+    var users = ViewBag.Users as List<User>; 
 }
 
 <input type="hidden" name="currentUserId" id="currentUserId" value="@currentUserId" />
 
 <h5>Collaborateurs de l'équipe : @ViewBag.ProfileName</h5>
-<div class="list-group">
+<div class="list-group mb-3">
     @foreach (var user in users)
     {
         <a 
            class="list-group-item list-group-item-action d-flex align-items-center userItem @(user.Id == currentUserId ? "active" : "")"
            data-userid="@user.Id">
-            <img src="https://i.pravatar.cc/40?u=@user.Id"
+            <img src="~/images/@user.ImageUser"
                  alt="@user.LastName"
                  class="rounded-circle me-3"
                  style="width:40px; height:40px; object-fit:cover;" />
+
+
+
             <div>
                 <div class="fw-bold">@user.LastName</div>
-                <small>@user.LastName</small>
+                <small>@user.Email</small>
             </div>
         </a>
     }
 </div>
 
-<!-- Modal -->
-<!-- Modal pour créer ou supprimer un événement -->
-<!-- Modal Création -->
+<!-- Modals (Création / Édition) -->
 <div id="createEventModal" class="modal" style="display:none;">
     <div class="modal-content" style="max-width:400px;margin:100px auto;padding:20px;border:1px solid #ccc;background:#fff;position:relative;">
         <span class="btn-close" style="position:absolute;top:10px;right:10px;cursor:pointer;">&times;</span>
@@ -74,21 +75,18 @@
         <form id="createEventForm" method="post" action="/Events/Create">
             <input type="hidden" name="StartDate" id="createStartDate">
             <input type="hidden" name="EndDate" id="createEndDate">
-
             <div class="mb-3">
                 <label>Type d'événement</label>
                 <select name="EventTypeId" class="form-select" required>
-                    <option value="1">Présentiel</option>
-                    <option value="4">Télétravail</option>
+                    <option value="4">Présentiel</option>
+                    <option value="6">Télétravail</option>
                 </select>
             </div>
-
             <button type="submit" class="btn btn-primary">Créer</button>
         </form>
     </div>
 </div>
 
-<!-- Modal Modification -->
 <div id="editEventModal" class="modal" style="display:none;">
     <div class="modal-content" style="max-width:400px;margin:100px auto;padding:20px;border:1px solid #ccc;background:#fff;position:relative;">
         <span class="btn-close" style="position:absolute;top:10px;right:10px;cursor:pointer;">&times;</span>
@@ -97,7 +95,6 @@
             <input type="text" name="Id" id="editEventId">
             <input type="hidden" name="StartDate" id="editStartDate">
             <input type="hidden" name="EndDate" id="editEndDate">
-
             <div class="mb-3">
                 <label>Type d'événement</label>
                 <select name="EventTypeId" id="editType" class="form-select" required>
@@ -105,20 +102,14 @@
                     <option value="4">Télétravail</option>
                 </select>
             </div>
-
             <div class="mb-3 form-check">
                 <input type="checkbox" class="form-check-input" id="cancelEvent" name="actionType" value="delete">
                 <label class="form-check-label" for="cancelEvent">Annuler cet événement</label>
             </div>
-
             <button type="submit" class="btn btn-success">Enregistrer</button>
         </form>
     </div>
 </div>
-
-
-
-
 
 @section Scripts {
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
@@ -126,11 +117,10 @@
 
     <script>
         $(document).ready(function () {
-            var currentMonth = parseInt($("#hiddenMonth").val());
-            var currentYear = parseInt($("#hiddenYear").val());
-            var selectedUserId = $(".userItem.active").length ? $(".userItem.active").data("userid") : 0;
-            var currentUserId = $("#currentUserId").val();
-
+            let currentMonth = parseInt($("#hiddenMonth").val());
+            let currentYear = parseInt($("#hiddenYear").val());
+            let selectedUserId = $(".userItem.active").length ? $(".userItem.active").data("userid") : 0;
+            let currentUserId = $("#currentUserId").val();
 
             function loadMonth(year, month, userId) {
                 $.get("/Planning/GetMonth", { year: year, month: month, userId: userId }, function (data) {
@@ -138,7 +128,7 @@
                     currentMonth = month;
                     currentYear = year;
                     selectedUserId = userId;
-                    var monthNames = ["Janvier", "Février", "Mars", "Avril", "Mai", "Juin", "Juillet",
+                    const monthNames = ["Janvier", "Février", "Mars", "Avril", "Mai", "Juin", "Juillet",
                         "Août", "Septembre", "Octobre", "Novembre", "Décembre"];
                     $("#hiddenMonthName").val(monthNames[month - 1]);
                     $("#currentMonth").text(monthNames[month - 1] + " " + currentYear);
@@ -147,13 +137,13 @@
             }
 
             $("#prevMonth").click(function () {
-                var newMonth = currentMonth - 1, newYear = currentYear;
+                let newMonth = currentMonth - 1, newYear = currentYear;
                 if (newMonth < 1) { newMonth = 12; newYear--; }
                 loadMonth(newYear, newMonth, selectedUserId);
             });
 
             $("#nextMonth").click(function () {
-                var newMonth = currentMonth + 1, newYear = currentYear;
+                let newMonth = currentMonth + 1, newYear = currentYear;
                 if (newMonth > 12) { newMonth = 1; newYear++; }
                 loadMonth(newYear, newMonth, selectedUserId);
             });
@@ -162,31 +152,25 @@
                 loadMonth(parseInt($(this).val()), currentMonth, selectedUserId);
             });
 
-            /*$(document).on("click", ".userItem", function (e) {
+            $(document).on("click", ".userItem", function (e) {
                 e.preventDefault();
-                var userId = $(this).data("userid");
-                var year = "@ViewBag.Year";
-                var month = "@ViewBag.Month";
-                window.location.href = "/Planning/Index?userId=" + userId + "&year=" + year + "&month=" + month;
-            });*/
+                selectedUserId = $(this).data("userid");
+                loadMonth(currentYear, currentMonth, selectedUserId);
+                $(".userItem").removeClass("active");
+                $(this).addClass("active");
+            });
 
             $(document).on("click", ".dayBtn:not([disabled])", function () {
-                var $btn = $(this);
-                var date = $btn.data("date");
-                var dayType = $btn.data("type");
-                var eventId = $btn.data("id");
-                var eventTypeId = $btn.data("typeid");
+                const $btn = $(this);
+                const date = $btn.data("date");
+                const dayType = $btn.data("type");
+                const eventId = $btn.data("id");
+                const eventTypeId = $btn.data("typeid");
 
                 if (!dayType) {
-                    // --- Aucune donnée → modal création ---
                     $("#createStartDate").val(date);
                     $("#createEndDate").val(date);
-
-                    if (selectedUserId == currentUserId) {
-                        $("#createEventModal").fadeIn();
-                    } else {
-
-                    }
+                    if (selectedUserId == currentUserId) $("#createEventModal").fadeIn();
 
                     $("#createEventForm").off("submit").on("submit", function (e) {
                         e.preventDefault();
@@ -197,23 +181,17 @@
                             });
                     });
                 } else {
-                    // --- Déjà un événement → modal édition ---
                     $("#editEventId").val(eventId);
                     $("#editStartDate").val(date);
                     $("#editEndDate").val(date);
                     $("#editType").val(eventTypeId);
                     $("#cancelEvent").prop("checked", false);
 
-                    if (selectedUserId == currentUserId) {
-                        $("#editEventModal").fadeIn();
-                    } else {
-
-                    }
+                    if (selectedUserId == currentUserId) $("#editEventModal").fadeIn();
 
                     $("#editEventForm").off("submit").on("submit", function (e) {
                         e.preventDefault();
-                        let formData = $(this).serialize();
-                        $.post($(this).attr("action"), formData)
+                        $.post($(this).attr("action"), $(this).serialize())
                             .done(function () {
                                 $("#editEventModal").fadeOut();
                                 loadMonth(currentYear, currentMonth, selectedUserId);
@@ -222,31 +200,9 @@
                 }
             });
 
-            // Fermer les modals
             $(document).on("click", ".modal .btn-close", function () {
                 $(this).closest(".modal").fadeOut();
             });
-
-
-            // Fermer la modal
-            $(document).on("click", "#createEventModal .btn-close", function () {
-                $("#createEventModal").fadeOut();
-            });
-
-            $(document).on("click", ".userItem", function (e) {
-                e.preventDefault();
-
-                var userId = $(this).data("userid");
-                selectedUserId = userId; // 🔑 on change l’utilisateur cible
-
-                // recharge le planning du mois courant avec ce userId
-                loadMonth(currentYear, currentMonth, selectedUserId);
-
-                // style actif
-                $(".userItem").removeClass("active");
-                $(this).addClass("active");
-            });
-
         });
     </script>
 }

@@ -14,6 +14,12 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+    <PackageReference Include="Microsoft.Graph" Version="5.93.0" />
+    <PackageReference Include="Microsoft.Identity.Client" Version="4.77.0" />
+    <PackageReference Include="Microsoft.Identity.Web" Version="3.14.1" />
+    <PackageReference Include="Microsoft.Identity.Web.MicrosoftGraph" Version="3.14.1" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
+    <PackageReference Include="RestSharp" Version="112.1.0" />
   </ItemGroup>
 
 </Project>

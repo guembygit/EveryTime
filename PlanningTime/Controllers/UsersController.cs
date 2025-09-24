@@ -19,56 +19,12 @@ public class UsersController : Controller
     // Liste des utilisateurs
     public IActionResult Index()
     {
+        ViewBag.Profiles = _context.Profiles.ToList();
         var users = _context.Users.Include(u => u.Profile).ToList();
         return View(users);
     }
 
-    // Formulaire création
-    [HttpGet]
-    public IActionResult Create()
-    {
-        ViewBag.Profiles = _context.Profiles.ToList(); // Rôles : Admin / Employé
-        return View();
-    }
-
-    // Soumission création
-    [HttpPost]
-    public IActionResult Create(User model, string password)
-    {
-        if (ModelState.IsValid)
-        {
-            model.PasswordHash = HashPassword(password);
-            model.IsActive = true; // par défaut actif
-            model.HireDate = model.HireDate == default ? DateTime.Now : model.HireDate;
-
-            _context.Users.Add(model);
-
-            try
-            {
-                _context.SaveChanges();
-                return RedirectToAction("Index");
-            }
-            catch (Exception ex)
-            {
-                ModelState.AddModelError("", "Impossible de créer l’utilisateur : " + ex.Message);
-            }
-        }
-
-        // Recharger la liste des profils si erreur
-        ViewBag.Profiles = _context.Profiles.ToList();
-        return View(model);
-    }
-
-
-    // Hashage mot de passe sécurisé
-    private string HashPassword(string password)
-    {
-        using var sha = SHA256.Create();
-        var bytes = sha.ComputeHash(Encoding.UTF8.GetBytes(password));
-        return Convert.ToBase64String(bytes);
-    }
-
-    // Edition GET
+    // GET: Partial view pour édition modal
     [HttpGet]
     public IActionResult Edit(int id)
     {
@@ -76,17 +32,42 @@ public class UsersController : Controller
         if (user == null) return NotFound();
 
         ViewBag.Profiles = _context.Profiles.ToList();
-        return PartialView("_EditUserModal", user); // Vue partielle modal
+        return PartialView("_EditUserModal", user); // PartialView pour le modal
     }
 
-    // Edition POST
+    // POST: Création utilisateur
+    [HttpPost]
+    public IActionResult Create(User model)
+    {
+        model.PasswordHash = HashPassword(Request.Form["password"]);
+        _context.Users.Add(model);
+        try
+        {
+            _context.SaveChanges();
+            return Json(new { success = true });
+        }
+        catch (Exception ex)
+        {
+            return Json(new { success = false, message = "Erreur DB: " + ex.Message });
+        }
+    }
+
+
+    public IActionResult ListPartial()
+    {
+        var users = _context.Users.Include(u => u.Profile).ToList();
+        return PartialView("_UsersTablePartial", users);
+    }
+
+
+    // POST: Edition utilisateur via AJAX
     [HttpPost]
     public IActionResult Edit(User model)
     {
-        if (!ModelState.IsValid) return BadRequest(ModelState);
+        if (!ModelState.IsValid) return Json(new { success = false, message = "Données invalides" });
 
         var user = _context.Users.Find(model.Id);
-        if (user == null) return NotFound();
+        if (user == null) return Json(new { success = false, message = "Utilisateur introuvable" });
 
         user.FirstName = model.FirstName;
         user.LastName = model.LastName;
@@ -99,6 +80,15 @@ public class UsersController : Controller
         return Json(new { success = true });
     }
 
+    // Hashage mot de passe sécurisé
+    private string HashPassword(string password)
+    {
+        using var sha = SHA256.Create();
+        var bytes = sha.ComputeHash(Encoding.UTF8.GetBytes(password));
+        return Convert.ToBase64String(bytes);
+    }
+
+    
     // Activer/Désactiver via Ajax
     [HttpPost]
     public IActionResult ToggleStatus(int id)
@@ -111,5 +101,19 @@ public class UsersController : Controller
 
         return Json(new { success = true, isActive = user.IsActive });
     }
+
+    public IActionResult GetUserImage(int id)
+    {
+        var user = _context.Users.Find(id);
+        if (user?.ImageUser == null || user.ImageUser.Length == 0)
+        {
+            var path = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/images/default-user.png");
+            var defaultBytes = System.IO.File.ReadAllBytes(path);
+            return File(defaultBytes, "image/png");
+        }
+
+        return File(user.ImageUser, "image/png");
+    }
+
 
 }

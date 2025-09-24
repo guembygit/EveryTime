@@ -13,6 +13,34 @@
       "PackagePath": "staticwebassets\\favicon.ico"
     },
     {
+      "Id": "C:\\Users\\guemb\\source\\repos\\PlanningTime\\PlanningTime\\wwwroot\\images\\Isaac.jpg",
+      "PackagePath": "staticwebassets\\images\\Isaac.jpg"
+    },
+    {
+      "Id": "C:\\Users\\guemb\\source\\repos\\PlanningTime\\PlanningTime\\wwwroot\\images\\avatar.jpg",
+      "PackagePath": "staticwebassets\\images\\avatar.jpg"
+    },
+    {
+      "Id": "C:\\Users\\guemb\\source\\repos\\PlanningTime\\PlanningTime\\wwwroot\\images\\charli.jpg",
+      "PackagePath": "staticwebassets\\images\\charli.jpg"
+    },
+    {
+      "Id": "C:\\Users\\guemb\\source\\repos\\PlanningTime\\PlanningTime\\wwwroot\\images\\jean.jpg",
+      "PackagePath": "staticwebassets\\images\\jean.jpg"
+    },
+    {
+      "Id": "C:\\Users\\guemb\\source\\repos\\PlanningTime\\PlanningTime\\wwwroot\\images\\logo.png",
+      "PackagePath": "staticwebassets\\images\\logo.png"
+    },
+    {
+      "Id": "C:\\Users\\guemb\\source\\repos\\PlanningTime\\PlanningTime\\wwwroot\\images\\simon.jpg",
+      "PackagePath": "staticwebassets\\images\\simon.jpg"
+    },
+    {
+      "Id": "C:\\Users\\guemb\\source\\repos\\PlanningTime\\PlanningTime\\wwwroot\\images\\xavier.jpg",
+      "PackagePath": "staticwebassets\\images\\xavier.jpg"
+    },
+    {
       "Id": "C:\\Users\\guemb\\source\\repos\\PlanningTime\\PlanningTime\\wwwroot\\js\\planning.js",
       "PackagePath": "staticwebassets\\js\\planning.js"
     },
@@ -249,8 +277,24 @@
       "PackagePath": "staticwebassets\\lib\\jquery\\dist\\jquery.min.map"
     },
     {
+      "Id": "C:\\Users\\guemb\\source\\repos\\PlanningTime\\PlanningTime\\wwwroot\\logo_wattvalue_83.png",
+      "PackagePath": "staticwebassets\\logo_wattvalue_83.png"
+    },
+    {
+      "Id": "C:\\Users\\guemb\\source\\repos\\PlanningTime\\PlanningTime\\wwwroot\\uploads\\4c9de91b-1baf-42a9-9835-93a8c94cc8d0.png",
+      "PackagePath": "staticwebassets\\uploads\\4c9de91b-1baf-42a9-9835-93a8c94cc8d0.png"
+    },
+    {
       "Id": "C:\\Users\\guemb\\source\\repos\\PlanningTime\\PlanningTime\\wwwroot\\uploads\\6358da2b-23d7-4806-af42-d65c0d9a62e6.pdf",
       "PackagePath": "staticwebassets\\uploads\\6358da2b-23d7-4806-af42-d65c0d9a62e6.pdf"
+    },
+    {
+      "Id": "C:\\Users\\guemb\\source\\repos\\PlanningTime\\PlanningTime\\wwwroot\\uploads\\91acdc0c-2796-4395-be4e-834847e96004.png",
+      "PackagePath": "staticwebassets\\uploads\\91acdc0c-2796-4395-be4e-834847e96004.png"
+    },
+    {
+      "Id": "C:\\Users\\guemb\\source\\repos\\PlanningTime\\PlanningTime\\wwwroot\\uploads\\bf33c0a8-c638-4556-8b9b-bea308a29b6f.png",
+      "PackagePath": "staticwebassets\\uploads\\bf33c0a8-c638-4556-8b9b-bea308a29b6f.png"
     },
     {
       "Id": "obj\\Debug\\net8.0\\staticwebassets\\msbuild.PlanningTime.Microsoft.AspNetCore.StaticWebAssets.props",

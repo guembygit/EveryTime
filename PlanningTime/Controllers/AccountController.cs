@@ -48,6 +48,7 @@ namespace PlanningTime.Controllers
     {
         new Claim(ClaimTypes.Name, user.Email),
         new Claim("FullName", user.FirstName + " " + user.LastName),
+        new Claim("ImageUser", user.ImageUser ?? "avatar.jpg"), // <= ajoute l’image
         new Claim(ClaimTypes.Role, user.Profile != null ? user.Profile.Name : "Utilisateur")
     };
 
@@ -55,6 +56,9 @@ namespace PlanningTime.Controllers
             var principal = new ClaimsPrincipal(identity);
 
             await HttpContext.SignInAsync("CookieAuth", principal);
+
+            // ✅ Sauvegarde en session (optionnel)
+            HttpContext.Session.SetInt32("UserId", user.Id);
 
             return RedirectToAction("Index", "Planning");
         }
@@ -67,6 +71,7 @@ namespace PlanningTime.Controllers
         {
             HttpContext.Session.Clear();
             await HttpContext.SignOutAsync("CookieAuth");
+            HttpContext.Session.Clear();
             return RedirectToAction("Login");
         }
 

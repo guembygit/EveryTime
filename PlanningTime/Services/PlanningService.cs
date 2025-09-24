@@ -89,7 +89,8 @@ namespace PlanningTime.Services
                 var userPlanning = new UserPlanning
                 {
                     UserId = user.Id,
-                    FullName = $"{user.FirstName} {user.LastName}"
+                    FullName = $"{user.FirstName} {user.LastName}",
+                    ImageUser = user.ImageUser
                 };
 
                 var weeks = new List<WeekPlanning>();

@@ -2,17 +2,38 @@
 
 <input type="hidden" id="hiddenMonthName" value="@ViewBag.MonthName" />
 
-<table class="table table-bordered text-center align-middle table-sm small-table">
+<!-- 🔹 Légende en bas -->
+<div class="legend-container mt-3 d-flex flex-wrap gap-3">
+    <div class="legend-item">
+        <span class="legend-dot" style="background-color:#4CAF50;"></span> Présentiel
+    </div>
+    <div class="legend-item">
+        <span class="legend-dot" style="background-color:#2196F3;"></span> Télétravail
+    </div>
+    <div class="legend-item">
+        <span class="legend-dot" style="background-color:#FF9800;"></span> Congé
+    </div>
+    <div class="legend-item">
+        <span class="legend-dot" style="background-color:#9C27B0;"></span> Absence
+    </div>
+    <div class="legend-item">
+        <span class="legend-dot" style="background-color:#00BCD4;"></span> Formation
+    </div>
+    <div class="legend-item">
+        <span class="legend-dot" style="background-color:#555555;"></span> Hors mois / Férié
+    </div>
+</div>
+
+<table class="table table-bordered align-middle small-table text-center users-planning-table">
     <thead>
-        <tr>
-            <th>Utilisateur</th>
+        <tr class="table-header-week">
+            <th class="user-col">Utilisateur</th>
             @for (int w = 0; w < Model.First().Weeks.Count; w++)
             {
                 <th colspan="7">Semaine @(w + 1)</th>
             }
         </tr>
-        <!-- Ligne des jours (L, Ma, ...) -->
-        <tr>
+        <tr class="table-header-day">
             <th></th>
             @for (int w = 0; w < Model.First().Weeks.Count; w++)
             {
@@ -22,8 +43,7 @@
                 }
             }
         </tr>
-        <!-- Ligne des numéros de jour -->
-        <tr>
+        <tr class="table-header-date">
             <th></th>
             @for (int w = 0; w < Model.First().Weeks.Count; w++)
             {
@@ -45,7 +65,16 @@
         @foreach (var user in Model)
         {
             <tr>
-                <td>@user.FullName</td>
+                <td class="user-cell d-flex flex-column align-items-center justify-content-center">
+                    <img src="~/images/@user.ImageUser"
+                 alt="@user.FullName"
+                 class="rounded-circle me-3"
+                 style="width:40px; height:40px; object-fit:cover;" />
+                    <div class="text-center">
+                        <div class="fw-bold">@user.FullName</div>
+                        <!--<small class="text-muted">@*@user.FullName*@</small>-->
+                    </div>
+                </td>
                 @for (int w = 0; w < user.Weeks.Count; w++)
                 {
                     foreach (var day in user.Weeks[w].Days)
@@ -73,22 +102,152 @@
 </table>
 
 <style>
-    .small-table th,
-    .small-table td {
-        font-size: 1.1rem; /* réduit la taille du texte */
-        padding: 2px 4px; /* réduit l’espacement */
+    /* Tableau général */
+    .users-planning-table {
+        font-size: 0.95rem;
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+        table-layout: fixed;
     }
 
+    .users-planning-table th,
+    .users-planning-table td {
+        padding: 4px;
+        vertical-align: middle;
+        border: 1px solid #dee2e6;
+    }
+
+    /* En-têtes */
+    .table-header-week th {
+        background: linear-gradient(90deg, #4CAF50, #2196F3);
+        color: white;
+        font-size: 1rem;
+        font-weight: 600;
+    }
+
+    .table-header-day th {
+        background-color: #f0f0f0;
+        font-weight: 500;
+    }
+
+    .table-header-date th {
+        background-color: #fafafa;
+        font-weight: 400;
+    }
+
+    /* Colonne utilisateur */
+    .user-col,
+    .user-cell {
+        width: 120px;
+        min-width: 120px;
+        background-color: #f8f9fa;
+    }
+
+    /* Cercle couleur jour */
     .dayDot {
         display: inline-block;
-        width: 10px; /* plus petit cercle */
-        height: 10px;
+        width: 12px;
+        height: 12px;
         border-radius: 50%;
         margin: auto;
+        transition: transform 0.2s ease;
     }
 
-        .dayDot:hover {
-            opacity: 0.8;
+    .dayDot:hover {
+        transform: scale(1.4);
+        cursor: pointer;
+    }
+
+    /* Légende */
+    .legend-container {
+        padding: 8px 0;
+    }
+
+    .legend-item {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        font-size: 0.9rem;
+        font-weight: 500;
+    }
+
+    .legend-dot {
+        width: 15px;
+        height: 15px;
+        border-radius: 50%;
+        display: inline-block;
+    }
+
+    /* Modal */
+    .modal {
+        display: none;
+        position: fixed;
+        z-index: 1050;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        overflow: auto;
+        background-color: rgba(0,0,0,0.4);
+    }
+
+    .modal-content.eventDetails {
+        background-color: #fff;
+        margin: 80px auto;
+        padding: 20px;
+        border-radius: 8px;
+        width: 90%;
+        max-width: 450px;
+        box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+        position: relative;
+    }
+
+        .modal-content.eventDetails .btn-close {
+            position: absolute;
+            top: 10px;
+            right: 10px;
             cursor: pointer;
+            font-size: 1.3rem;
         }
+
+    #detailStatus {
+        font-weight: bold;
+        padding: 2px 6px;
+        border-radius: 4px;
+        display: inline-block;
+        margin-left: 5px;
+    }
+
+        /* Couleur des statuts dans le modal */
+        #detailStatus:contains("Pending") {
+            background-color: #2196F3;
+            color: white;
+        }
+
+        #detailStatus:contains("Approved") {
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        #detailStatus:contains("Rejected") {
+            background-color: #F44336;
+            color: white;
+        }
+
+
+    /* Responsive */
+    @@media (max-width: 992px) {
+        .user-col,
+        .user-cell {
+            width: 80px;
+            min-width: 80px;
+        }
+
+        .users-planning-table th,
+        .users-planning-table td {
+            font-size: 0.8rem;
+            padding: 2px;
+        }
+    }
 </style>

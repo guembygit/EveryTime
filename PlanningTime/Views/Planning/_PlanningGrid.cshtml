@@ -20,9 +20,62 @@
     }
 }
 
-<table class="table table-bordered text-center">
-    <thead>
-        <tr>
+<!-- Légende des événements -->
+<div class="legend mt-3 d-flex flex-wrap justify-content-center">
+    <div class="legend-item d-flex align-items-center m-1">
+        <span class="legend-color" style="background-color:#4CAF50;"></span>
+        <span class="ms-1">Présentiel</span>
+    </div>
+    <div class="legend-item d-flex align-items-center m-1">
+        <span class="legend-color" style="background-color:#2196F3;"></span>
+        <span class="ms-1">Télétravail</span>
+    </div>
+    <div class="legend-item d-flex align-items-center m-1">
+        <span class="legend-color" style="background-color:#FF9800;"></span>
+        <span class="ms-1">Congé</span>
+    </div>
+    <div class="legend-item d-flex align-items-center m-1">
+        <span class="legend-color" style="background-color:#9C27B0;"></span>
+        <span class="ms-1">Absence</span>
+    </div>
+    <div class="legend-item d-flex align-items-center m-1">
+        <span class="legend-color" style="background-color:#00BCD4;"></span>
+        <span class="ms-1">Formation</span>
+    </div>
+    <div class="legend-item d-flex align-items-center m-1">
+        <span class="legend-color" style="background-color:#555555;"></span>
+        <span class="ms-1">Férié / Week-end</span>
+    </div>
+    <div class="legend-item d-flex align-items-center m-1">
+        <span class="legend-color" style="background-color:#e0e0e0;"></span>
+        <span class="ms-1">Jours passés</span>
+    </div>
+</div>
+
+<style>
+    .legend {
+        font-size: 0.9rem;
+        text-align: center;
+    }
+
+    .legend-item {
+        display: flex;
+        align-items: center;
+    }
+
+    .legend-color {
+        display: inline-block;
+        width: 20px;
+        height: 20px;
+        border-radius: 4px;
+        border: 1px solid #ccc;
+    }
+</style>
+
+
+<table class="table table-bordered text-center small-table shadow-sm" style="font-size:0.9rem;">
+    <thead class="table-dark text-white">
+        <tr class="align-middle" style="box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
             <th>Lundi</th>
             <th>Mardi</th>
             <th>Mercredi</th>
@@ -67,7 +120,7 @@
                         {
                             date = new DateTime(year, month, dayNumber);
                         }
-                            
+
                         var day = Model?.FirstOrDefault(d => d.Date.Date == date.Date);
                         bool isWeekend = date.DayOfWeek == DayOfWeek.Saturday || date.DayOfWeek == DayOfWeek.Sunday;
                         bool isHoliday = day?.IsDisabled ?? false;
@@ -75,9 +128,9 @@
                         bool isDisabled = isPast || isWeekend || isHoliday;
 
                         var bgColor = GetColor(day?.Type, isWeekend, isHoliday, isPast);
-                        <td style="background-color:@bgColor; vertical-align:top; height:100px;">
-                            <button class="dayBtn btn btn-sm w-100 h-100"
-                                    style="background-color:transparent; border:none;"
+                        <td style="background-color:@bgColor; vertical-align:top; height:80px; min-width:60px;">
+                            <button class="dayBtn btn btn-sm w-100 h-100 text-start"
+                                    style="background-color:transparent; border:none; padding:3px;"
                                     data-date="@date.ToString("yyyy-MM-dd")"
                                     data-type="@day?.Type"
                                     data-id="@day?.EventId"
@@ -90,9 +143,9 @@
                                     <div style="margin-top:3px;">
                                         @foreach (var ue in day.UserEvents)
                                         {
-                                            <div style="background-color:@GetColor(ue.Type, false, false, false);
+                                            <div style="background-color:@GetColor(ue.Type,false,false,false);
                                                             color:white;
-                                                            font-size:0.7em;
+                                                            font-size:0.65em;
                                                             padding:2px;
                                                             margin-bottom:1px;
                                                             border-radius:3px;
@@ -112,3 +165,22 @@
         }
     </tbody>
 </table>
+
+<style>
+    .small-table th,
+    .small-table td {
+        font-size: 0.85rem;
+        padding: 2px 4px;
+    }
+
+    .dayBtn:hover {
+        background-color: rgba(0,0,0,0.05);
+        cursor: pointer;
+    }
+
+    .table-dark th {
+        background: linear-gradient(45deg, #343a40, #495057);
+        color: #fff;
+        text-shadow: 0 1px 1px rgba(0,0,0,0.2);
+    }
+</style>

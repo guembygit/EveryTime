@@ -1,75 +1,257 @@
 ﻿@model List<PlanningTime.Models.Event>
+@using Newtonsoft.Json
 
-<h2>Mes événements</h2>
-
-@if (!Model.Any())
-{
-    <p>Vous n'avez encore créé aucun événement.</p>
+@{
+    ViewBag.Title = "Mes événements";
+    var eventTypes = ViewBag.EventTypes as List<PlanningTime.Models.EventType>;
+    var simpleEventTypes = eventTypes?.Select(t => new { t.Id, t.Name }).ToList();
 }
-else
-{
-    <table>
-        <thead>
-            <tr>
-                <th>Type</th>
-                <th>Motif</th>
-                <th>Début</th>
-                <th>Fin</th>
-                <th>Status</th>
-                <th>Justificatif</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var e in Model)
-            {
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css" rel="stylesheet">
+
+<div class="container mt-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="text-primary fw-bold">📅 Mes événements</h2>
+        <button id="btnCreateEvent" class="btn btn-success shadow-sm">
+            <i class="fa fa-plus me-2"></i>Créer un événement
+        </button>
+    </div>
+
+    <div class="table-responsive shadow-lg rounded-4 bg-white p-4">
+        <table class="table table-hover align-middle text-center mb-0" id="eventsTable">
+            <thead class="table-dark text-white rounded-3">
                 <tr>
-                    <td>@e.EventType.Name</td>
-                    <td>@e.Motif</td>
-                    <td>@e.StartDate.ToShortDateString()</td>
-                    <td>@e.EndDate.ToShortDateString()</td>
-                    <td>@e.Status</td>
-                    <td>
-                        @if (!string.IsNullOrEmpty(e.Justificatif))
-                        {
-                            <a href="@e.Justificatif" target="_blank">Voir</a>
-                        }
-                        else
-                        {
-                            <span>—</span>
-                        }
-                    </td>
-                    <td>
-                        <button class="btn btn-sm btn-danger deleteEvent" data-id="@e.Id">Supprimer</button>
-                    </td>
+                    <th>Type</th>
+                    <th>Motif</th>
+                    <th>Début</th>
+                    <th>Fin</th>
+                    <th>Status</th>
+                    <th>Justificatif</th>
+                    <th>Actions</th>
                 </tr>
-            }
-        </tbody>
-    </table>
-}
+            </thead>
+            <tbody>
+                @foreach (var e in Model)
+                {
+                    var statusClass = e.Status switch
+                    {
+                        PlanningTime.Models.EventStatus.Approved => "badge bg-success",
+                        PlanningTime.Models.EventStatus.Pending => "badge bg-warning text-dark",
+                        PlanningTime.Models.EventStatus.Rejected => "badge bg-danger",
+                        _ => "badge bg-secondary"
+                    };
+
+                    <tr class="align-middle shadow-sm rounded-2 mb-2" data-id="@e.Id" style="transition: all 0.2s;">
+                        <td class="fw-semibold">@e.EventType?.Name</td>
+                        <td>@e.Motif</td>
+                        <td>@e.StartDate:dd/MM/yyyy</td>
+                        <td>@e.EndDate:dd/MM/yyyy</td>
+                        <td><span class="@statusClass">@e.Status</span></td>
+                        <td>
+                            @if (!string.IsNullOrEmpty(e.Justificatif))
+                            {
+                                <a href="@e.Justificatif" target="_blank" class="btn btn-sm btn-outline-primary">Voir</a>
+                            }
+                            else
+                            {
+                                <span class="text-muted">—</span>
+                            }
+                        </td>
+                        <td>
+                            <button class="btn btn-sm btn-warning editEvent me-1">
+                                <i class="fa fa-pen"></i> Modifier
+                            </button>
+                            <button class="btn btn-sm btn-danger deleteEvent">
+                                <i class="fa fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+        @if (!Model.Any())
+        {
+            <div class="alert alert-info mt-3 text-center">Vous n'avez encore créé aucun événement.</div>
+        }
+    </div>
+</div>
+
+<!-- Modal création/édition événement -->
+<div class="modal fade" id="eventModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content" id="eventModalContent">
+            <!-- Injecté par JS -->
+        </div>
+    </div>
+</div>
+
+<style>
+    body {
+        background: #f4f7fa;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    .table-hover tbody tr:hover {
+        background-color: #f0f8ff;
+        transition: 0.2s;
+    }
+
+    .btn:hover {
+        transform: translateY(-2px);
+    }
+</style>
 
 @section Scripts {
-    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+
     <script>
+        var eventTypes = @Html.Raw(JsonConvert.SerializeObject(simpleEventTypes));
+        var eventModal = new bootstrap.Modal(document.getElementById('eventModal'), { backdrop: 'static', keyboard: false });
+        const holidays = ["2025-01-01", "2025-05-01", "2025-12-25"];
 
-        $(document).on("click", ".deleteEvent", function () {
-            if (!confirm("Voulez-vous vraiment supprimer cet événement ?")) return;
+        function disableDates(date) {
+            const today = new Date(); today.setHours(0, 0, 0, 0);
+            if (date < today) return true;
+            if (date.getDay() === 0 || date.getDay() === 6) return true;
+            return holidays.includes(date.toISOString().split("T")[0]);
+        }
 
-            var btn = $(this);
-            var id = btn.data("id");
-
-            $.post("/Events/Delete", { id: id }, function (res) {
-                if (res.success) {
-                    // Supprime la ligne du tableau sans recharger la page
-                    btn.closest("tr").fadeOut(300, function () {
-                        $(this).remove();
-                    });
-                } else {
-                    alert("Erreur lors de la suppression !");
+        function renderEventForm(event = null) {
+            return `
+                    <div class="modal-header bg-primary text-white">
+                        <h5 class="modal-title">${event ? "Modifier l'événement" : "Créer un événement"}</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body p-4">
+                        <form id="${event ? 'editEventForm' : 'createEventForm'}" enctype="multipart/form-data">
+                            <div class="input-group mb-3">
+                                <span class="input-group-text"><i class="fa fa-calendar"></i></span>
+                                <select name="EventTypeId" class="form-control" required>
+                                    ${eventTypes.map(function (t) {
+                return `<option value="${t.Id}" ${(event && event.EventType && event.EventType.Id === t.Id) ? "selected" : ""}>${t.Name}</option>`;
+            }).join('')
                 }
+                                </select>
+                            </div>
+                            <div class="row g-3 mb-3">
+                                <div class="col-md-6">
+                                    <input type="text" id="StartDate" name="StartDate" class="form-control" placeholder="Date de début" value="${event ? event.StartDate : ''}" required />
+                                </div>
+                                <div class="col-md-6">
+                                    <input type="text" id="EndDate" name="EndDate" class="form-control" placeholder="Date de fin" value="${event ? event.EndDate : ''}" required />
+                                </div>
+                            </div>
+                            <div class="input-group mb-3">
+                                <span class="input-group-text"><i class="fa fa-pen"></i></span>
+                                <textarea name="Motif" class="form-control" placeholder="Motif" rows="3">${event ? event.Motif : ''}</textarea>
+                            </div>
+                            <div class="input-group mb-3">
+                                <span class="input-group-text"><i class="fa fa-file"></i></span>
+                                <input type="file" name="Justificatif" id="JustificatifInput" class="form-control" accept="image/*,.pdf" />
+                            </div>
+                            <div id="previewContainer" class="mb-3"></div>
+                            <button type="submit" class="btn btn-success w-100">
+                                <i class="fa fa-save me-2"></i>${event ? 'Mettre à jour' : 'Créer'}
+                            </button>
+                        </form>
+                    </div>`;
+        }
+
+        function initFlatpickers() {
+            flatpickr("#StartDate", { dateFormat: "Y-m-d", disable: [disableDates], locale: "fr" });
+            flatpickr("#EndDate", { dateFormat: "Y-m-d", disable: [disableDates], locale: "fr" });
+        }
+
+        function reloadEventsTable() {
+            $.get("/Events/ListPartial", function (html) {
+                $("#eventsTable tbody").html(html);
+            });
+        }
+
+        $(function () {
+            // Créer
+            $("#btnCreateEvent").click(function () {
+                $("#eventModalContent").html(renderEventForm());
+                eventModal.show();
+                initFlatpickers();
+
+                $("#createEventForm").off("submit").on("submit", function (e) {
+                    e.preventDefault();
+                    var formData = new FormData(this);
+                    $.ajax({
+                        url: '/Events/Create',
+                        type: 'POST',
+                        data: formData,
+                        processData: false,
+                        contentType: false,
+                        success: function (res) {
+                            if (res.success) { 
+                                eventModal.hide(); 
+                                //location.reload();
+                                reloadEventsTable()
+                            }
+                            else alert("Erreur lors de la création !");
+                        },
+                        error: function () { alert("Erreur réseau !"); }
+                    });
+                });
+            });
+
+            // Modifier
+            $(document).on("click", ".editEvent", function () {
+                var id = $(this).closest("tr").data("id");
+                $.get("/Events/GetById", { id: id }, function (event) {
+                    $("#eventModalContent").html(renderEventForm(event));
+                    eventModal.show();
+                    initFlatpickers();
+
+                    $("#editEventForm").off("submit").on("submit", function (e) {
+                        e.preventDefault();
+                        var formData = new FormData(this);
+                        $.ajax({
+                            url: '/Events/Edit',
+                            type: 'POST',
+                            data: formData,
+                            processData: false,
+                            contentType: false,
+                            success: function (res) {
+                                if (res.success) { eventModal.hide(); location.reload(); }
+                                else alert("Erreur lors de la modification !");
+                            },
+                            error: function () { alert("Erreur réseau !"); }
+                        });
+                    });
+                });
+            });
+
+            // Supprimer
+            $(document).on("click", ".deleteEvent", function () {
+                if (!confirm("Voulez-vous vraiment supprimer cet événement ?")) return;
+                var row = $(this).closest("tr");
+                var id = row.data("id");
+                $.post("/Events/Delete", { id: id }, function (res) {
+                    if (res.success) row.fadeOut(300, function () { $(this).remove(); });
+                    else alert("Erreur lors de la suppression !");
+                });
+            });
+
+            // Preview justificatif
+            $(document).on("change", "#JustificatifInput", function () {
+                var file = this.files[0];
+                var preview = $("#previewContainer"); preview.empty();
+                if (!file) return;
+                if (file.type.startsWith("image/")) {
+                    var reader = new FileReader();
+                    reader.onload = function (e) { preview.append(`<img src="${e.target.result}" class="img-fluid"/>`); }
+                    reader.readAsDataURL(file);
+                } else if (file.type === "application/pdf") {
+                    preview.append(`<iframe src="${URL.createObjectURL(file)}" width="100%" height="150px"></iframe>`);
+                } else { preview.text("Aperçu non disponible pour ce type de fichier."); }
             });
         });
-       
     </script>
 }
-

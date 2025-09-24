@@ -153,6 +153,10 @@ namespace PlanningTime.Migrations
                     b.Property<DateTime>("HireDate")
                         .HasColumnType("datetime2");
 
+                    b.Property<string>("ImageUser")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
 

@@ -1,92 +1,216 @@
-﻿@model List<User>
+﻿@model List<PlanningTime.Models.User>
+@{
+    ViewBag.Title = "Gestion des utilisateurs";
+    var profiles = ViewBag.Profiles as List<PlanningTime.Models.Profile>;
+}
 
-<h2>Gestion des utilisateurs</h2>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
 
-<a href="/Users/Create" class="btn btn-success mb-3">Créer un utilisateur</a>
+<div class="container my-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="text-primary fw-bold">Gestion des utilisateurs</h2>
+        <button class="btn btn-success shadow-sm" data-bs-toggle="modal" data-bs-target="#createUserModal">
+            <i class="fa fa-plus me-2"></i>Créer un utilisateur
+        </button>
+    </div>
 
-<table class="table table-bordered">
-    <thead>
-        <tr>
-            <th>Nom</th>
-            <th>Email</th>
-            <th>Profil</th>
-            <th>Actif</th>
-            <th>Actions</th>
-        </tr>
-    </thead>
-    <tbody id="usersTable">
-        @foreach (var u in Model)
-        {
-            <tr data-id="@u.Id">
-                <td>@u.FirstName @u.LastName</td>
-                <td>@u.Email</td>
-                <td>@u.Profile.Name</td>
-                <td class="status">
-                    <span class="badge @(u.IsActive ? "bg-success" : "bg-danger")">
-                        @(u.IsActive ? "Actif" : "Désactivé")
-                    </span>
-                </td>
-                <td>
-                    <button class="btn btn-sm btn-warning editUser">Modifier</button>
-                    <button class="btn btn-sm btn-secondary toggleStatus">
-                        @(u.IsActive ? "Désactiver" : "Activer")
-                    </button>
-                </td>
-            </tr>
-        }
-    </tbody>
+    <div class="table-responsive shadow-sm rounded p-3 bg-white">
+        <table class="table table-hover align-middle" id="usersTable">
+            <thead class="table-light">
+                <tr>
+                    <th>Nom</th>
+                    <th>Email</th>
+                    <th>Profil</th>
+                    <th>Actif</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var u in Model)
+                {
+                    <tr data-id="@u.Id">
+                        <td>@u.FirstName @u.LastName</td>
+                        <td>@u.Email</td>
+                        <td>@u.Profile?.Name</td>
+                        <td class="status">
+                            <span class="badge @(u.IsActive ? "bg-success" : "bg-danger")">
+                                @(u.IsActive ? "Actif" : "Désactivé")
+                            </span>
+                        </td>
+                        <td>
+                            <button class="btn btn-sm btn-warning editUser me-1">
+                                <i class="fa fa-pen"></i> Modifier
+                            </button>
+                            <button class="btn btn-sm btn-secondary toggleStatus">
+                                @(u.IsActive ? "Désactiver" : "Activer")
+                            </button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
 
-</table>
+<!-- Modal création -->
+<div class="modal fade" id="createUserModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title">Créer un utilisateur</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="createUserForm">
+                    <div class="mb-2">
+                        <label>Prénom</label>
+                        <input name="FirstName" class="form-control" required />
+                    </div>
+                    <div class="mb-2">
+                        <label>Nom</label>
+                        <input name="LastName" class="form-control" required />
+                    </div>
+                    <div class="mb-2">
+                        <label>Email</label>
+                        <input name="Email" type="email" class="form-control" required />
+                    </div>
+                    <div class="mb-2">
+                        <label>Mot de passe</label>
+                        <input name="password" type="password" class="form-control" required />
+                    </div>
+                    <div class="mb-2">
+                        <label>Profil</label>
+                        <select name="ProfileId" class="form-control" required>
+                           @foreach (var p in (List<PlanningTime.Models.Profile>)ViewBag.Profiles)
+                            {
+                                <option value="@p.Id">@p.Name</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="mb-2">
+                        <label>Date embauche</label>
+                        <input type="date" name="HireDate" class="form-control" />
+                    </div>
+                    <div class="form-check mb-3">
+                        <input type="checkbox" name="IsActive" class="form-check-input" checked />
+                        <label class="form-check-label">Actif</label>
+                    </div>
+                    <button type="submit" class="btn btn-success w-100">Créer</button>
+                </form>
 
-<!-- Modal -->
-<div class="modal fade" id="userModal" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content" id="userModalContent">
+            </div>
         </div>
+    </div>
+</div>
+
+<!-- Modal édition (chargée en AJAX) -->
+<div class="modal fade" id="editUserModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content" id="editUserModalContent"></div>
     </div>
 </div>
 
 @section Scripts {
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
-    <script>
-        $(function () {
-            // Charger modal édition
-            $(".editUser").click(function () {
-                var id = $(this).closest("tr").data("id");
-                $.get("/Users/Edit", { id: id }, function (html) {
-                    $("#userModalContent").html(html);
-                    $("#userModal").modal("show");
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
-                    // Sauvegarde Ajax
-                    $("#saveUserBtn").click(function () {
-                        var formData = $("#editUserForm").serialize();
-                        $.post("/Users/Edit", formData, function (res) {
-                            if (res.success) location.reload();
-                        });
+    <script>
+        var editModal = new bootstrap.Modal(document.getElementById('editUserModal'), { backdrop: 'static', keyboard: false });
+
+        // Charger modal édition
+        $(document).on("click", ".editUser", function () {
+            var id = $(this).closest("tr").data("id");
+            $.get("/Users/Edit", { id: id }, function (html) {
+                $("#editUserModalContent").html(html);
+                editModal.show();
+
+                $("#editUserForm").off("submit").on("submit", function (e) {
+                    e.preventDefault();
+                    $.post("/Users/Edit", $(this).serialize(), function (res) {
+                        if (res.success) {
+                            editModal.hide();
+                            location.reload();
+                        } else {
+                            alert(res.message || "Erreur lors de la modification !");
+                        }
                     });
                 });
             });
-
-            // Toggle Actif/Inactif
-            $(".toggleStatus").click(function () {
-                var $row = $(this).closest("tr");
-                var id = $row.data("id");
-                var $statusCell = $row.find(".status");
-                var $btn = $(this);
-
-                $.post("/Users/ToggleStatus", { id: id }, function (res) {
-                    if (res.success) {
-                        if (res.isActive) {
-                            $statusCell.html('<span class="badge bg-success">Actif</span>');
-                            $btn.text("Désactiver");
-                        } else {
-                            $statusCell.html('<span class="badge bg-danger">Désactivé</span>');
-                            $btn.text("Activer");
-                        }
-                    }
-                });
-            });
-
         });
+
+        // Toggle statut
+        $(document).on("click", ".toggleStatus", function () {
+            var $row = $(this).closest("tr");
+            var id = $row.data("id");
+            var $statusCell = $row.find(".status");
+            var $btn = $(this);
+
+            $.post("/Users/ToggleStatus", { id: id }, function (res) {
+                if (res.success) {
+                    if (res.isActive) {
+                        $statusCell.html('<span class="badge bg-success">Actif</span>');
+                        $btn.text("Désactiver");
+                    } else {
+                        $statusCell.html('<span class="badge bg-danger">Désactivé</span>');
+                        $btn.text("Activer");
+                    }
+                }
+            });
+        });
+
+        // Création utilisateur
+        /*$(document).on("submit", "#createUserForm", function (e) {
+            e.preventDefault();
+
+            var formData = $(this).serialize();
+
+            $.post("/Users/Create", formData, function (res) {
+                if (res.success) {
+                    $("#createUserModal").modal("hide");
+                    location.reload(); // recharge la liste
+                } else {
+                    alert(res.message || "Erreur lors de la création !");
+                }
+            });
+        });*/
+
+        // Création utilisateur sans serialize, avec $.ajax "à l'ancienne"
+        $(document).on("submit", "#createUserForm", function (e) {
+            e.preventDefault();
+
+            var hireDateVal = $("input[name='HireDate']").val();
+
+            var data = {
+                FirstName: $("input[name='FirstName']").val(),
+                LastName: $("input[name='LastName']").val(),
+                Email: $("input[name='Email']").val(),
+                password: $("input[name='password']").val(),
+                ProfileId: parseInt($("select[name='ProfileId']").val()), // cast en int
+                HireDate: hireDateVal ? hireDateVal : null,
+                IsActive: $("input[name='IsActive']").is(":checked")
+            };
+
+            $.ajax({
+                url: "/Users/Create",
+                method: "POST",
+                data: data,
+                success: function (res) {
+                    if (res.success) {
+                        $("#createUserModal").modal("hide");
+                        location.reload();
+                    } else {
+                        alert(res.message || "Erreur lors de la création !");
+                    }
+                },
+                error: function (xhr, status, error) {
+                    console.error("Erreur AJAX:", status, error);
+                    alert("Une erreur est survenue lors de l'insertion !");
+                }
+            });
+        });
+
+
+
     </script>
 }

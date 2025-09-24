@@ -1,4 +1,4 @@
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using PlanningTime.Data;
 using PlanningTime.Models;
@@ -6,10 +6,17 @@ using PlanningTime.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// ⚡ Ajoute ceci pour IHttpContextAccessor
+builder.Services.AddHttpContextAccessor();
+
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 
-// Ajouter les services, les injections de d�pendences
+builder.Services.AddRazorPages();
+builder.Services.AddSession(); // si tu utilises déjà la session
+// ... autres services
+
+// Ajouter les services, les injections de dépendences
 builder.Services.AddScoped<HolidayService>();
 builder.Services.AddScoped<PlanningService>();
 
@@ -39,7 +46,7 @@ builder.Services.AddAuthorization();
 
 var app = builder.Build();
 
-// Appeler le seed au d�marrage
+// Appeler le seed au démarrage
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
@@ -64,6 +71,7 @@ app.UseRouting();
 app.UseSession();
 app.UseAuthentication();
 app.UseAuthorization();
+app.UseSession(); // ⚡ nécessaire pour les sessions
 
 
 
