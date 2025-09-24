@@ -1,0 +1,23 @@
+﻿@model List<PlanningTime.Models.User>
+
+@foreach (var u in Model)
+{
+    <tr data-id="@u.Id">
+        <td>@u.FirstName @u.LastName</td>
+        <td>@u.Email</td>
+        <td>@u.Profile?.Name</td>
+        <td class="status">
+            <span class="badge @(u.IsActive ? "bg-success" : "bg-danger")">
+                @(u.IsActive ? "Actif" : "Désactivé")
+            </span>
+        </td>
+        <td>
+            <button class="btn btn-sm btn-warning editUser me-1">
+                <i class="fa fa-pen"></i> Modifier
+            </button>
+            <button class="btn btn-sm btn-secondary toggleStatus">
+                @(u.IsActive ? "Désactiver" : "Activer")
+            </button>
+        </td>
+    </tr>
+}

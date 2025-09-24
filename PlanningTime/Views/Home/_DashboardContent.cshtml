@@ -1,0 +1,143 @@
+﻿@using Newtonsoft.Json
+@model List<PlanningTime.Models.Event>
+
+@{
+    var statsByType = (Dictionary<string, int>)ViewBag.StatsByType ?? new();
+    var statsByStatus = (Dictionary<string, int>)ViewBag.StatsByStatus ?? new();
+    var totalEvents = (int)(ViewBag.TotalEvents ?? 0);
+}
+
+<div class="container-fluid mt-4">
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card text-white bg-primary shadow-sm">
+                <div class="card-body">
+                    <h6 class="card-title">Événements Totaux</h6>
+                    <h2 class="text-end"><i class="fa fa-calendar f-left"></i><span>@totalEvents</span></h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-success shadow-sm">
+                <div class="card-body">
+                    <h6 class="card-title">Événements Approuvés</h6>
+                    <h2 class="text-end"><i class="fa fa-check f-left"></i><span>@(statsByStatus.ContainsKey("Approved") ? statsByStatus["Approved"] : 0)</span></h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-warning shadow-sm">
+                <div class="card-body">
+                    <h6 class="card-title">Événements en Attente</h6>
+                    <h2 class="text-end"><i class="fa fa-clock-o f-left"></i><span>@(statsByStatus.ContainsKey("Pending") ? statsByStatus["Pending"] : 0)</span></h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-danger shadow-sm">
+                <div class="card-body">
+                    <h6 class="card-title">Événements Rejetés</h6>
+                    <h2 class="text-end"><i class="fa fa-times f-left"></i><span>@(statsByStatus.ContainsKey("Rejected") ? statsByStatus["Rejected"] : 0)</span></h2>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">Répartition des types de jours</div>
+                <div class="card-body">
+                    <canvas id="pieTypes"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-header bg-warning text-dark">Statut des événements</div>
+                <div class="card-body">
+                    <canvas id="pieStatus"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-12 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-header bg-success text-white">📈 Répartition globale</div>
+                <div class="card-body">
+                    <canvas id="barGlobal"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    (function () {
+        function renderCharts(statsByType, statsByStatus, totalEvents) {
+            // ❗ Couleurs
+            const typeColors = ['#4CAF50', '#2196F3', '#FF9800', '#9C27B0', '#00BCD4', '#555555'];
+            const statusColors = ['#2196F3', '#4CAF50', '#F44336'];
+
+            // ✅ Créer graphiques en vérifiant que les canvas existent
+            const pieTypesCanvas = document.getElementById('pieTypes');
+            if (pieTypesCanvas) {
+                new Chart(pieTypesCanvas, {
+                    type: 'pie',
+                    data: {
+                        labels: Object.keys(statsByType),
+                        datasets: [{ data: Object.values(statsByType), backgroundColor: typeColors }]
+                    },
+                    options: { responsive: true }
+                });
+            }
+
+            const pieStatusCanvas = document.getElementById('pieStatus');
+            if (pieStatusCanvas) {
+                new Chart(pieStatusCanvas, {
+                    type: 'pie',
+                    data: {
+                        labels: Object.keys(statsByStatus),
+                        datasets: [{ data: Object.values(statsByStatus), backgroundColor: statusColors }]
+                    },
+                    options: { responsive: true }
+                });
+            }
+
+            const barGlobalCanvas = document.getElementById('barGlobal');
+            if (barGlobalCanvas) {
+                new Chart(barGlobalCanvas, {
+                    type: 'bar',
+                    data: {
+                        labels: ['Total', ...Object.keys(statsByStatus)],
+                        datasets: [{
+                            label: 'Événements',
+                            data: [totalEvents, ...Object.values(statsByStatus)],
+                            backgroundColor: ['#555555', ...statusColors]
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: { display: false },
+                            title: { display: true, text: 'Nombre global d\'événements' }
+                        },
+                        scales: { y: { beginAtZero: true } }
+                    }
+                });
+            }
+        }
+
+        // ❗ Initial render
+        const statsByType = @Html.Raw(JsonConvert.SerializeObject(statsByType));
+        const statsByStatus = @Html.Raw(JsonConvert.SerializeObject(statsByStatus));
+        const totalEvents = @totalEvents;
+        renderCharts(statsByType, statsByStatus, totalEvents);
+
+        // ❗ Exemple d'AJAX futur : tu pourras appeler renderCharts avec de nouvelles données
+    })();
+</script>

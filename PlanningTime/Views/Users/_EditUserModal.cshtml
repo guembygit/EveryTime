@@ -1,0 +1,56 @@
+﻿@model PlanningTime.Models.User
+@{
+    var profiles = ViewBag.Profiles as List<PlanningTime.Models.Profile>;
+}
+
+<div class="modal-header bg-primary text-white">
+    <h5 class="modal-title">Modifier utilisateur</h5>
+    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+</div>
+
+<div class="modal-body">
+    <form id="editUserForm" method="post">
+        <input type="hidden" name="Id" value="@Model.Id" />
+
+        <div class="mb-2">
+            <label>Prénom</label>
+            <input name="FirstName" value="@Model.FirstName" class="form-control" required />
+        </div>
+
+        <div class="mb-2">
+            <label>Nom</label>
+            <input name="LastName" value="@Model.LastName" class="form-control" required />
+        </div>
+
+        <div class="mb-2">
+            <label>Email</label>
+            <input name="Email" type="email" value="@Model.Email" class="form-control" required />
+        </div>
+
+        <div class="mb-2">
+            <label>Profil</label>
+            <select name="ProfileId" class="form-control">
+                @foreach (var p in profiles)
+                {
+                    <option value="@p.Id" selected="@(p.Id == Model.ProfileId)">
+                        @p.Name
+                    </option>
+                }
+            </select>
+        </div>
+
+        <div class="mb-2">
+            <label>Date embauche</label>
+            <input name="HireDate" type="date" value="@Model.HireDate.ToString("yyyy-MM-dd")" class="form-control" required />
+        </div>
+
+        <div class="form-check">
+            <input type="checkbox" name="IsActive" class="form-check-input" value="true" @(Model.IsActive ? "checked" : "") />
+            <label class="form-check-label">Actif</label>
+        </div>
+
+        <div class="mt-3">
+            <button type="submit" class="btn btn-primary w-100">Enregistrer</button>
+        </div>
+    </form>
+</div>
