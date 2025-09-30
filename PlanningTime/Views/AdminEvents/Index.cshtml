@@ -33,7 +33,7 @@
                             </div>
                         </td>
                         <td>@e.EventType.Name</td>
-                        <td>@e.StartDate:dd/MM/yyyy - @e.EndDate:dd/MM/yyyy</td>
+                        <td>@e.StartDate.ToString("dd/MM/yyyy") - @e.EndDate.ToString("dd/MM/yyyy")</td>
                         <td>@e.Motif</td>
                         <td>
                             @if (!string.IsNullOrEmpty(e.Justificatif))

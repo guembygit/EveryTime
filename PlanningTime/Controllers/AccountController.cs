@@ -33,7 +33,7 @@ namespace PlanningTime.Controllers
             var user = _context.Users
                 .Include(u => u.Profile)
                 .FirstOrDefault(u => u.Email.ToLower() == email.ToLower()
-                                  && u.PasswordHash.Trim() == hashed.Trim());
+                                  && u.PasswordHash.Trim() == hashed.Trim() && u.IsActive == false);
 
             if (user == null)
             {

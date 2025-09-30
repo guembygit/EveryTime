@@ -78,8 +78,8 @@
             <div class="mb-3">
                 <label>Type d'événement</label>
                 <select name="EventTypeId" class="form-select" required>
-                    <option value="4">Présentiel</option>
-                    <option value="6">Télétravail</option>
+                    <option value="1">Présentiel</option>
+                    <option value="2">Télétravail</option>
                 </select>
             </div>
             <button type="submit" class="btn btn-primary">Créer</button>
@@ -99,7 +99,7 @@
                 <label>Type d'événement</label>
                 <select name="EventTypeId" id="editType" class="form-select" required>
                     <option value="1">Présentiel</option>
-                    <option value="4">Télétravail</option>
+                    <option value="2">Télétravail</option>
                 </select>
             </div>
             <div class="mb-3 form-check">
@@ -166,6 +166,8 @@
                 const dayType = $btn.data("type");
                 const eventId = $btn.data("id");
                 const eventTypeId = $btn.data("typeid");
+
+                alert(dayType + " "+eventTypeId + " "+eventId);
 
                 if (!dayType) {
                     $("#createStartDate").val(date);

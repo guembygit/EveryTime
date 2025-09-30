@@ -24,40 +24,53 @@
     </div>
 </div>
 
+@{
+    int year = ViewBag.Year;
+    int month = ViewBag.Month;
+
+    // 1er et dernier jour du mois courant
+    var firstDayOfMonth = new DateTime(year, month, 1);
+    var lastDayOfMonth = firstDayOfMonth.AddMonths(1).AddDays(-1);
+}
+
 <table class="table table-bordered align-middle small-table text-center users-planning-table">
     <thead>
         <tr class="table-header-week">
             <th class="user-col">Utilisateur</th>
-            @for (int w = 0; w < Model.First().Weeks.Count; w++)
-            {
-                <th colspan="7">Semaine @(w + 1)</th>
+            @{
+                int weekNumber = 1;
+                var start = firstDayOfMonth;
+                while (start <= lastDayOfMonth)
+                {
+                    // Calcul de la fin de semaine (dimanche ou fin du mois)
+                    var endOfWeek = start.AddDays(6);
+                    if (endOfWeek > lastDayOfMonth)
+                        endOfWeek = lastDayOfMonth;
+
+                    int daysInThisWeek = (endOfWeek - start).Days + 1;
+
+                    <th colspan="@daysInThisWeek">Semaine @weekNumber</th>
+                    ;
+
+                    // Avance à la semaine suivante
+                    weekNumber++;
+                    start = endOfWeek.AddDays(1);
+                }
             }
         </tr>
+
         <tr class="table-header-day">
             <th></th>
-            @for (int w = 0; w < Model.First().Weeks.Count; w++)
+            @for (var day = firstDayOfMonth; day <= lastDayOfMonth; day = day.AddDays(1))
             {
-                foreach (var day in Model.First().Weeks[w].Days)
-                {
-                    <th>@day.Date.ToString("ddd")</th>
-                }
+                <th>@day.ToString("ddd")</th>
             }
         </tr>
         <tr class="table-header-date">
             <th></th>
-            @for (int w = 0; w < Model.First().Weeks.Count; w++)
+            @for (var day = firstDayOfMonth; day <= lastDayOfMonth; day = day.AddDays(1))
             {
-                foreach (var day in Model.First().Weeks[w].Days)
-                {
-                    if (day.Date.Month == ViewBag.Month)
-                    {
-                        <th>@day.Date.Day</th>
-                    }
-                    else
-                    {
-                        <th class="text-muted">@day.Date.Day</th>
-                    }
-                }
+                <th>@day.Day</th>
             }
         </tr>
     </thead>
@@ -67,39 +80,49 @@
             <tr>
                 <td class="user-cell d-flex flex-column align-items-center justify-content-center">
                     <img src="~/images/@user.ImageUser"
-                 alt="@user.FullName"
-                 class="rounded-circle me-3"
-                 style="width:40px; height:40px; object-fit:cover;" />
+                         alt="@user.FullName"
+                         class="rounded-circle me-3"
+                         style="width:40px; height:40px; object-fit:cover;" />
                     <div class="text-center">
                         <div class="fw-bold">@user.FullName</div>
-                        <!--<small class="text-muted">@*@user.FullName*@</small>-->
                     </div>
                 </td>
-                @for (int w = 0; w < user.Weeks.Count; w++)
-                {
-                    foreach (var day in user.Weeks[w].Days)
-                    {
-                        var color = "#e0e0e0"; // par défaut
-                        if (day.Date.Month == ViewBag.Month)
-                        {
-                            color = day.Color;
-                        }
 
-                        <td>
-                            <span class="dayDot"
-                                  style="background-color:@color;"
-                                  title="@day.Type?.ToString()"
-                                  data-type="@day.Type"
-                                  data-id="@day?.EventId"
-                                  data-typeid="@day?.EventTypeId">
-                            </span>
-                        </td>
+                @for (var day = firstDayOfMonth; day <= lastDayOfMonth; day = day.AddDays(1))
+                {
+                    // Chercher si l'utilisateur a une planification ce jour-là
+                    var planningDay = user.Weeks
+                    .SelectMany(w => w.Days)
+                    .FirstOrDefault(d => d.Date.Date == day.Date);
+
+                    var color = "#e0e0e0"; // défaut = gris clair
+                    string type = "";
+                    int? eventId = null;
+                    int? typeId = null;
+
+                    if (planningDay != null && planningDay.Date.Month == month)
+                    {
+                        color = planningDay.Color;
+                        type = planningDay.Type?.ToString();
+                        eventId = planningDay.EventId;
+                        typeId = planningDay.EventTypeId;
                     }
+
+                    <td>
+                        <span class="dayDot"
+                              style="background-color:@color;"
+                              title="@type"
+                              data-type="@type"
+                              data-id="@eventId"
+                              data-typeid="@typeId">
+                        </span>
+                    </td>
                 }
             </tr>
         }
     </tbody>
 </table>
+
 
 <style>
     /* Tableau général */

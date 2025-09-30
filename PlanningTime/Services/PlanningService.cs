@@ -28,6 +28,8 @@ namespace PlanningTime.Services
                 .Include(e => e.User)
                 .Include(e => e.EventType)
                 .Where(e => e.UserId == userId &&
+                            e.Status == EventStatus.Approved &&
+                            e.IsDeleted == false &&
                             e.StartDate <= lastDay &&
                             e.EndDate >= firstDay)
                 .ToList();
@@ -95,15 +97,19 @@ namespace PlanningTime.Services
 
                 var weeks = new List<WeekPlanning>();
 
-                // 4 premières semaines (tu peux étendre à 5 si nécessaire)
-                for (int w = 0; w < 4; w++)
+                // 🔹 Nombre total de jours du mois
+                int totalDays = (lastDay - firstDay).Days + 1;
+
+                // 🔹 Nombre total de semaines nécessaires
+                int totalWeeks = (int)Math.Ceiling(totalDays / 7.0);
+
+                for (int w = 0; w < totalWeeks; w++)
                 {
                     var week = new WeekPlanning();
 
                     for (int d = 0; d < 7; d++)
                     {
                         var currentDate = firstDay.AddDays(w * 7 + d);
-
                         if (currentDate > lastDay) break;
 
                         var day = new PlanningDay
@@ -117,6 +123,8 @@ namespace PlanningTime.Services
                         var evt = events.FirstOrDefault(e =>
                             e.UserId == user.Id &&
                             e.StartDate <= currentDate &&
+                            e.Status ==  EventStatus.Approved &&
+                            e.IsDeleted == false &&
                             e.EndDate >= currentDate);
 
                         if (evt != null)
@@ -129,7 +137,7 @@ namespace PlanningTime.Services
                                 UserId = evt.UserId,
                                 UserName = $"{evt.User.FirstName} {evt.User.LastName}",
                                 Type = day.Type.Value,
-                                EventId = day.EventId,          // 👈 ici on met l’ID de l’événement
+                                EventId = day.EventId,
                                 EventTypeId = evt.EventTypeId,
                             });
                         }
@@ -149,6 +157,7 @@ namespace PlanningTime.Services
 
             return result;
         }
+
 
         // ✅ Mappe un type d’évènement en DayType
         private DayType MapEventTypeToDayType(string eventTypeName)

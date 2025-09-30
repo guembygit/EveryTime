@@ -46,8 +46,8 @@
                     <tr class="align-middle shadow-sm rounded-2 mb-2" data-id="@e.Id" style="transition: all 0.2s;">
                         <td class="fw-semibold">@e.EventType?.Name</td>
                         <td>@e.Motif</td>
-                        <td>@e.StartDate:dd/MM/yyyy</td>
-                        <td>@e.EndDate:dd/MM/yyyy</td>
+                        <td>@e.StartDate.ToString("dd/MM/yyyy")</td>
+                        <td>@e.EndDate.ToString("dd/MM/yyyy")</td>
                         <td><span class="@statusClass">@e.Status</span></td>
                         <td>
                             @if (!string.IsNullOrEmpty(e.Justificatif))

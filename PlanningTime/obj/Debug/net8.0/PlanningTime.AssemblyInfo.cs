@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("PlanningTime")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+0bac3d30c362bdd7554ac0f34d7b58ef1536f672")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+1abe4f8edbc465f7112deb390ab737ecb865908a")]
 [assembly: System.Reflection.AssemblyProductAttribute("PlanningTime")]
 [assembly: System.Reflection.AssemblyTitleAttribute("PlanningTime")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
